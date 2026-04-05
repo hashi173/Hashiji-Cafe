@@ -20,20 +20,18 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Expose the source directory for immediate access during development
-        // In production, you would map to a specific external folder
-        Path uploadDir = Paths.get("./src/main/resources/static/images/products/");
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
+        // We REMOVE the manual mapping for /images/products/** because it points
+        // to a local ./src/... path that doesn't exist on Render.
+        // Spring Boot will automatically serve images in src/main/resources/static/
+        // from the root context in production.
 
-        registry.addResourceHandler("/images/products/**")
-                .addResourceLocations("file:/" + uploadPath + "/");
-
-        // Expose the uploads directory for CVs and other uploads
-        Path uploadsDir = Paths.get("./uploads");
-        String uploadsPath = uploadsDir.toFile().getAbsolutePath();
+        // Expose the uploads directory for uploaded product images, CVs, and other files.
+        // This folder will be outside the JAR, in the server's working directory.
+        Path uploadsPath = Paths.get("uploads");
+        String absoluteUploadsPath = uploadsPath.toFile().getAbsolutePath();
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:/" + uploadsPath + "/");
+                .addResourceLocations("file:" + absoluteUploadsPath + "/");
     }
 
     // ========== Internationalization (i18n) ==========

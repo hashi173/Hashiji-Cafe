@@ -123,38 +123,32 @@ public class ProductController {
 
         if (!imageFile.isEmpty()) {
             try {
-                String uploadDir = "src/main/resources/static/images/products/";
+                String uploadDir = "uploads/products/";
                 Path uploadPath = Paths.get(uploadDir);
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
                 String fileName = java.util.UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-
                 try (InputStream inputStream = imageFile.getInputStream()) {
                     Path filePath = uploadPath.resolve(fileName);
                     Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                    product.setImage("/images/products/" + fileName);
+                    product.setImage("/uploads/products/" + fileName);
                 }
             } catch (IOException e) {
-                ra.addFlashAttribute("error", "Could not save image: " + e.getMessage());
-                // Keep existing image on error
+                ra.addFlashAttribute("error", "Could not save uploaded image: " + e.getMessage());
                 if (existingImage != null) {
                     product.setImage(existingImage);
                 }
             }
         } else if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-            // Use the provided URL if no file is uploaded
             String url = imageUrl.trim();
-            // Don't add https:// prefix to local paths (starting with /)
             if (!url.startsWith("/") && !url.toLowerCase().startsWith("http://")
                     && !url.toLowerCase().startsWith("https://")) {
                 url = "https://" + url;
             }
             product.setImage(url);
         } else {
-            // No new image provided (File or URL) - preserve existing
-            // This covers both "imageUrl is explicitly empty" and "imageUrl is null"
             if (existingImage != null) {
                 product.setImage(existingImage);
             }
