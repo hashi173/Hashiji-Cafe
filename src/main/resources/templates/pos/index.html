@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{pos/layout :: layout(~{::content})}">
+
+<head>
+    <title>POS - Point of Sale</title>
+
+</head>
+
+<body>
+    <div th:fragment="content" class="h-100 p-0">
+        <!-- Full height container -->
+        <div class="row g-0 h-100" style="min-height: calc(100vh - 60px);">
+
+            <!-- LEFT: Product Grid -->
+            <div class="col-lg-8 bg-light p-3" style="overflow-y: auto; height: calc(100vh - 60px);">
+                <!-- Category Filter -->
+                <div class="d-flex gap-2 pb-3 mb-3 border-bottom overflow-auto">
+                    <button class="btn btn-dark rounded-pill px-4 fw-bold active"
+                        onclick="filterCategory('all')">All</button>
+                    <button th:each="cat : ${categories}" class="btn btn-white border rounded-pill px-4 fw-bold"
+                        th:text="${cat.name}" th:onclick="'filterCategory(' + ${cat.id} + ')'">Coffee</button>
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold ms-auto" onclick="openCustomItemModal()">
+                        <i class="fas fa-plus me-1"></i> Custom Item
+                    </button>
+                </div>
+
+                <!-- Products -->
+                <div class="row row-cols-3 row-cols-xl-4 g-3">
+                    <div class="col product-item" th:each="product : ${products}"
+                        th:data-category="${product.category != null ? product.category.id : '0'}">
+                        <div class="card h-100 border-0 shadow-sm" style="cursor: pointer; transition: transform 0.1s;"
+                            th:onclick="'openProductModal(' + ${product.id} + ')'"
+                            onmousedown="this.style.transform='scale(0.95)'"
+                            onmouseup="this.style.transform='scale(1)'">
+                            <div style="height: 12rem; overflow: hidden;">
+                                <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/300'}"
+                                    class="card-img-top w-100 h-100" style="object-fit: cover;">
+                            </div>
+                            <div class="card-body p-2 text-center">
+                                <h6 class="card-title fw-bold text-dark mb-1 text-truncate"
+                                    th:text="${#locale.language == 'vi' && product.nameVi != null ? product.nameVi : product.name}">
+                                    Latte</h6>
+                                <p class="card-text text-primary fw-bold small mb-0"
+                                    th:if="${product.sizes != null and !product.sizes.empty}"
+                                    th:text="${#numbers.formatDecimal(product.sizes[0].price, 0, 'COMMA', 0, 'POINT')}">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Current Order -->
+            <div class="col-lg-4 bg-white border-start d-flex flex-column" style="height: calc(100vh - 60px);">
+                <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0"><i class="fas fa-receipt me-2"></i>Current Order</h5>
+                        <small class="text-muted" id="order-id">New Order</small>
+                    </div>
+                    <button class="btn btn-outline-primary position-relative" data-bs-toggle="modal"
+                        data-bs-target="#onlineOrdersModal">
+                        <i class="fas fa-globe"></i> Orders
+                        <span th:if="${!activeOrders.empty}"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            th:text="${activeOrders.size()}">1</span>
+                    </button>
+                </div>
+
+                <!-- Order Items List -->
+                <div class="flex-grow-1 p-3" style="overflow-y: auto;" id="cart-items">
+                    <!-- Items will be injected here by JS -->
+                    <div class="text-center text-muted mt-5">
+                        <i class="fas fa-cash-register fa-3x mb-3"></i>
+                        <p>Select products to start order</p>
+                    </div>
+                </div>
+
+                <!-- Totals & Actions -->
+                <div class="p-3 border-top bg-light">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span class="fw-bold" id="subtotal">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="h5 fw-bold">Total:</span>
+                        <span class="h4 fw-bold text-primary" id="total">0 đ</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg fw-bold" onclick="processCheckout()">
+                            <i class="fas fa-check-circle me-2"></i> PAY & PRINT
+                        </button>
+                        <button class="btn btn-outline-danger fw-bold" onclick="clearCart()">
+                            <i class="fas fa-trash-alt me-2"></i> Cancel Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Data for JS -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const currentLocale = [[${ #locale.language }]];
+            // JSON data is pre-serialized in Controller to avoid parsing errors
+            const allToppings = [(${ toppingsJson })];
+            const productDataList = [(${ productsJson })];
+
+            // Convert Array to Object Map for fast lookup
+            const productData = {};
+            productDataList.forEach(p => {
+                productData[p.id] = p;
+            });
+            /*]]>*/
+        </script>
+
+        <!-- POS Logic -->
+        <script>
+            let cart = [];
+
+            function filterCategory(catId) {
+                const items = document.querySelectorAll('.product-item');
+                items.forEach(item => {
+                    if (catId === 'all' || item.getAttribute('data-category') == catId) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            // Simplified addToCart using lookup
+            function addToCart(productId) {
+                const product = productData[productId];
+                if (!product) return;
+
+                const sizes = product.sizes;
+                if (!sizes || sizes.length === 0) {
+                    alert("This product has no price configured!");
+                    return;
+                }
+
+                // Default to first size (Small/Regular)
+                let selectedSize = sizes[0];
+
+                // Check if already in cart to increment
+                let existingItem = cart.find(i => i.productId === productId && i.sizeId === selectedSize.id);
+
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    let pName = product.name;
+                    if (currentLocale === 'vi' && product.nameVi) {
+                        pName = product.nameVi;
+                    }
+
+                    cart.push({
+                        productId: productId,
+                        productName: pName, // Use localized name
+                        sizeId: selectedSize.id,
+                        sizeName: selectedSize.sizeName,
+                        price: selectedSize.price,
+                        quantity: 1,
+                        toppingNames: []
+                    });
+                }
+                renderCart();
+            }
+
+            function renderCart() {
+                const container = document.getElementById('cart-items');
+                if (cart.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted mt-5">
+                            <i class="fas fa-cash-register fa-3x mb-3"></i>
+                            <p>Select products to start order</p>
+                        </div>`;
+                    document.getElementById('subtotal').innerText = '0';
+                    document.getElementById('total').innerText = '0 đ';
+                    return;
+                }
+
+                let html = '';
+                let total = 0;
+
+                cart.forEach((item, index) => {
+                    let itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+
+                    html += `
+                        <div class="card mb-2 border-0 shadow-sm">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">${item.productName}</h6>
+                                        <small class="text-muted">${item.sizeName}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold text-primary">${itemTotal.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <div class="input-group input-group-sm" style="width: 100px;">
+                                        <button class="btn btn-outline-secondary" onclick="updateQty(${index}, -1)">-</button>
+                                        <input type="text" class="form-control text-center p-0" value="${item.quantity}" readonly>
+                                        <button class="btn btn-outline-secondary" onclick="updateQty(${index}, 1)">+</button>
+                                    </div>
+                                    <button class="btn btn-link text-danger p-0 shadow-none" onclick="removeFromCart(${index})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('subtotal').innerText = total.toLocaleString();
+                document.getElementById('total').innerText = total.toLocaleString() + ' đ';
+            }
+
+            function updateQty(index, change) {
+                if (cart[index].quantity + change <= 0) {
+                    removeFromCart(index);
+                } else {
+                    cart[index].quantity += change;
+                    renderCart();
+                }
+            }
+
+            function removeFromCart(index) {
+                cart.splice(index, 1);
+                renderCart();
+            }
+
+            function clearCart() {
+                if (confirm('Clear all items?')) {
+                    cart = [];
+                    renderCart();
+                }
+            }
+
+            // Add Custom Item
+            function openCustomItemModal() {
+                const modal = new bootstrap.Modal(document.getElementById('customItemModal'));
+                // Reset form
+                document.getElementById('customName').value = '';
+                document.getElementById('customPrice').value = '';
+                document.getElementById('customQty').value = '1';
+                modal.show();
+            }
+
+            function addCustomItem() {
+                const name = document.getElementById('customName').value;
+                const price = parseFloat(document.getElementById('customPrice').value);
+                const qty = parseInt(document.getElementById('customQty').value);
+
+                if (!name || isNaN(price) || price < 0 || isNaN(qty) || qty <= 0) {
+                    alert("Please enter valid details.");
+                    return;
+                }
+
+                cart.push({
+                    productId: null, // Custom item flag
+                    productName: name + " (Manual)",
+                    sizeId: null,
+                    sizeName: "Custom",
+                    price: price,
+                    quantity: qty,
+                    toppingNames: []
+                });
+
+                renderCart();
+                bootstrap.Modal.getInstance(document.getElementById('customItemModal')).hide();
+            }
+
+
+            // --- PRODUCT CONFIGURATION MODAL (Menu Items) ---
+            let currentProduct = null;
+            let currentSizes = [];
+
+            function openProductModal(productId) {
+                const product = productData[productId];
+                if (!product) return;
+
+                currentProduct = product;
+                currentSizes = product.sizes || [];
+
+                if (currentSizes.length === 0) {
+                    alert("Product has no sizes/price configured!");
+                    return;
+                }
+
+                // Populate Info
+                let pName = product.name;
+                if (currentLocale === 'vi' && product.nameVi) {
+                    pName = product.nameVi;
+                }
+                document.getElementById('modalProdName').innerText = pName;
+                document.getElementById('modalProdImg').src = product.image ? product.image : 'https://via.placeholder.com/300';
+                document.getElementById('modalQty').value = 1;
+
+                // Render Sizes
+                const sizeContainer = document.getElementById('modalSizes');
+                sizeContainer.innerHTML = '';
+                currentSizes.forEach((size, index) => {
+                    const checked = index === 0 ? 'checked' : '';
+                    sizeContainer.innerHTML += `
+                            <div class="col-auto">
+                                <input type="radio" class="btn-check" name="modalSize" id="size_${size.id}" value="${size.id}" data-price="${size.price}" ${checked} onchange="updateModalPrice()">
+                                <label class="btn btn-outline-dark rounded-pill" for="size_${size.id}">${size.sizeName}</label>
+                            </div>`;
+                });
+
+                // Render Toppings
+                const toppingContainer = document.getElementById('modalToppings');
+                toppingContainer.innerHTML = '';
+                allToppings.forEach(t => {
+                    toppingContainer.innerHTML += `
+                            <div class="col-6 col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="${t.id}" id="top_${t.id}" data-name="${t.name}" data-price="${t.price}" onchange="updateModalPrice()">
+                                    <label class="form-check-label" for="top_${t.id}">${t.name} (+${t.price})</label>
+                                </div>
+                            </div>`;
+                });
+
+                // Reset Sugar/Ice
+                document.getElementById('sugar_100').checked = true;
+                document.getElementById('ice_100').checked = true;
+
+                updateModalPrice();
+                new bootstrap.Modal(document.getElementById('productConfigModal')).show();
+            }
+
+            function updateModalPrice() {
+                const sizeRadio = document.querySelector('input[name="modalSize"]:checked');
+                if (!sizeRadio) return;
+
+                let price = parseFloat(sizeRadio.getAttribute('data-price'));
+
+                // Add toppings
+                document.querySelectorAll('#modalToppings input:checked').forEach(cb => {
+                    price += parseFloat(cb.getAttribute('data-price'));
+                });
+
+                const qty = parseInt(document.getElementById('modalQty').value);
+                const total = price * qty;
+
+                document.getElementById('modalTotalPrice').innerText = total.toLocaleString() + ' đ';
+            }
+
+            function adjustModalQty(delta) {
+                const input = document.getElementById('modalQty');
+                let val = parseInt(input.value) + delta;
+                if (val < 1) val = 1;
+                input.value = val;
+                updateModalPrice();
+            }
+
+            function confirmAddItem() {
+                const sizeRadio = document.querySelector('input[name="modalSize"]:checked');
+                if (!sizeRadio) return; // Should not happen
+
+                const sizeId = parseInt(sizeRadio.value);
+                // Find size obj
+                const sizeObj = currentSizes.find(s => s.id === sizeId);
+
+                // Toppings
+                let toppingNames = [];
+                let extraPrice = 0;
+                document.querySelectorAll('#modalToppings input:checked').forEach(cb => {
+                    toppingNames.push(cb.getAttribute('data-name'));
+                    extraPrice += parseFloat(cb.getAttribute('data-price'));
+                });
+
+                // Sugar
+                const sugar = document.querySelector('input[name="modalSugar"]:checked').value;
+                if (sugar !== '100') toppingNames.push(`Sugar ${sugar}%`);
+
+                // Ice
+                const ice = document.querySelector('input[name="modalIce"]:checked').value;
+                if (ice !== '100') toppingNames.push(`Ice ${ice}%`);
+
+                // Note logic: We treat these as "toppingNames" string list for display in POS
+                // Backend creates a "Snapshot" so price must be total Unit Price (Base + Toppings)
+
+                const finalUnitPrice = sizeObj.price + extraPrice;
+                const qty = parseInt(document.getElementById('modalQty').value);
+
+                // Get localized product name
+                let pName = currentProduct.name;
+                if (currentLocale === 'vi' && currentProduct.nameVi) {
+                    pName = currentProduct.nameVi;
+                }
+
+                // Add to Cart
+                cart.push({
+                    productId: currentProduct.id,
+                    productName: pName,
+                    sizeId: sizeObj.id,
+                    sizeName: sizeObj.sizeName,
+                    price: finalUnitPrice, // Unit price containing toppings
+                    quantity: qty,
+                    toppingNames: toppingNames
+                });
+
+                renderCart();
+                bootstrap.Modal.getInstance(document.getElementById('productConfigModal')).hide();
+            }
+
+            function processCheckout() {
+                if (cart.length === 0) return;
+
+                const data = {
+                    items: cart
+                };
+
+                fetch('/pos/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN']: document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(async response => {
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.message || 'Network response was not ok');
+                        }
+                        const result = await response.json();
+                        return result;
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Open PDF in new tab
+                            window.open('/invoice/' + data.orderId, '_blank');
+                            alert('Order #' + data.orderId + ' COMPLETED!');
+                            cart = [];
+                            renderCart();
+                        } else {
+                            alert('Error processing order');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Checkout Failed: ' + error);
+                    });
+            }
+        </script>
+
+        <!-- Custom Item Modal (Manual) -->
+        <div class="modal fade" id="customItemModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Custom Item (Manual)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="customName" placeholder="e.g. Misc Service">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price (đ)</label>
+                            <input type="number" class="form-control" id="customPrice" placeholder="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="customQty" value="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" onclick="addCustomItem()">Add Custom Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Config Modal (Standard) -->
+        <div class="modal fade" id="productConfigModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body pt-0">
+                        <div class="row">
+                            <!-- Image -->
+                            <div class="col-md-4 text-center">
+                                <img id="modalProdImg" src="" class="img-fluid rounded-3 mb-3"
+                                    style="max-height: 200px; object-fit: cover;">
+                                <h4 id="modalProdName" class="fw-bold">Product Name</h4>
+                            </div>
+                            <!-- Options -->
+                            <div class="col-md-8">
+                                <!-- Sizes -->
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-2">Size</label>
+                                    <div class="row g-2" id="modalSizes">
+                                        <!-- JS Injected -->
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Sugar -->
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-2">Sugar Level</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="modalSugar" id="sugar_100"
+                                            value="100" checked>
+                                        <label class="btn btn-outline-secondary btn-sm" for="sugar_100">100%</label>
+
+                                        <input type="radio" class="btn-check" name="modalSugar" id="sugar_70"
+                                            value="70">
+                                        <label class="btn btn-outline-secondary btn-sm" for="sugar_70">70%</label>
+
+                                        <input type="radio" class="btn-check" name="modalSugar" id="sugar_50"
+                                            value="50">
+                                        <label class="btn btn-outline-secondary btn-sm" for="sugar_50">50%</label>
+
+                                        <input type="radio" class="btn-check" name="modalSugar" id="sugar_30"
+                                            value="30">
+                                        <label class="btn btn-outline-secondary btn-sm" for="sugar_30">30%</label>
+
+                                        <input type="radio" class="btn-check" name="modalSugar" id="sugar_0" value="0">
+                                        <label class="btn btn-outline-secondary btn-sm" for="sugar_0">0%</label>
+                                    </div>
+                                </div>
+
+                                <!-- Ice -->
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-2">Ice Level</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_100" value="100"
+                                            checked>
+                                        <label class="btn btn-outline-secondary btn-sm" for="ice_100">100%</label>
+
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_70" value="70">
+                                        <label class="btn btn-outline-secondary btn-sm" for="ice_70">70%</label>
+
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_50" value="50">
+                                        <label class="btn btn-outline-secondary btn-sm" for="ice_50">50%</label>
+
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_30" value="30">
+                                        <label class="btn btn-outline-secondary btn-sm" for="ice_30">30%</label>
+
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_0" value="0">
+                                        <label class="btn btn-outline-secondary btn-sm" for="ice_0">0%</label>
+
+                                        <input type="radio" class="btn-check" name="modalIce" id="ice_hot" value="Hot">
+                                        <label class="btn btn-outline-warning btn-sm" for="ice_hot">Hot</label>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Toppings -->
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-2">Toppings</label>
+                                    <div class="row g-2" id="modalToppings">
+                                        <!-- JS Injected -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <div class="d-flex align-items-center me-auto">
+                            <button class="btn btn-outline-dark btn-sm" onclick="adjustModalQty(-1)"><i
+                                    class="fas fa-minus"></i></button>
+                            <input type="text" id="modalQty" class="form-control text-center mx-2" value="1"
+                                style="width: 50px;" readonly>
+                            <button class="btn btn-outline-dark btn-sm" onclick="adjustModalQty(1)"><i
+                                    class="fas fa-plus"></i></button>
+                        </div>
+                        <h4 class="fw-bold text-primary mb-0 me-3" id="modalTotalPrice">0 đ</h4>
+                        <button type="button" class="btn btn-primary btn-lg rounded-pill px-4"
+                            onclick="confirmAddItem()">Add to Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Orders Modal -->
+        <div class="modal fade" id="onlineOrdersModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-globe me-2"></i>Online / Pending Orders</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div id="no-pending-msg" th:if="${activeOrders.empty}" class="text-center py-5 text-muted">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>No active orders.</p>
+                        </div>
+                        <div id="pending-list" class="list-group list-group-flush" th:unless="${activeOrders.empty}">
+                            <div th:each="order : ${activeOrders}" th:id="'order-card-' + ${order.id}"
+                                class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <h6 class="fw-bold mb-0 me-2"
+                                                th:text="'#' + ${order.id} + ' - ' + ${order.customerName}">
+                                                #1 - Name
+                                            </h6>
+                                            <!-- Status Badge -->
+                                            <span class="badge"
+                                                th:classappend="${order.status.name() == 'PENDING' ? 'bg-warning text-dark' : 
+                                                                 (order.status.name() == 'CONFIRMED' ? 'bg-primary' : 
+                                                                 (order.status.name() == 'SHIPPING' ? 'bg-info text-dark' : 'bg-secondary'))}"
+                                                th:text="${order.status}">PENDING</span>
+                                        </div>
+                                        <div class="small text-muted mb-2">
+                                            <i class="fas fa-phone me-1"></i> <span th:text="${order.phone}"></span> |
+                                            <i class="fas fa-clock me-1"></i> <span
+                                                th:text="${#temporals.format(order.createdAt, 'HH:mm dd/MM')}"></span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span th:each="detail : ${order.orderDetails}"
+                                                class="badge bg-light text-dark border me-1 mb-1">
+                                                <span
+                                                    th:text="${detail.quantity} + 'x ' + (${#locale.language == 'vi' && detail.product != null && detail.product.nameVi != null} ? ${detail.product.nameVi} : ${detail.productName}) + ' (' + ${detail.sizeSelected} + ')'">1x
+                                                    Latte</span>
+                                            </span>
+                                        </div>
+                                        <div class="text-danger small fw-bold"
+                                            th:if="${order.note != null && !order.note.isEmpty()}">
+                                            Note: <span th:text="${order.note}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold text-primary fs-5 mb-2"
+                                            th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                            50,000 đ</div>
+                                        <div class="d-flex gap-1 justify-content-end align-items-center">
+
+                                            <!-- Status Dropdown -->
+                                            <select class="form-select form-select-sm" style="width: auto;"
+                                                th:onchange="'updateOrderStatus(' + ${order.id} + ', this.value)'">
+                                                <option th:each="status : ${orderStatuses}" th:value="${status}"
+                                                    th:text="${status}" th:selected="${status == order.status}">
+                                                </option>
+                                            </select>
+
+                                            <!-- Quick Accept for Pending -->
+                                            <button th:if="${order.status.name() == 'PENDING'}"
+                                                class="btn btn-sm btn-success fw-bold ms-1"
+                                                th:onclick="'updateOrderStatus(' + ${order.id} + ', \'CONFIRMED\')'">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="/pos" class="btn btn-outline-primary"><i class="fas fa-sync me-1"></i> Refresh</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function updateOrderStatus(orderId, status) {
+                fetch(`/pos/orders/${orderId}/status?status=${status}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Logic: 
+                            // If status is changed to COMPLETED or CANCELLED -> Remove card
+                            // If status is changed to CONFIRMED or SHIPPING -> Refresh is ideal, but we can just update UI?
+                            // For simplicity, let's remove if COMPLETED/CANCELLED/FAILED.
+                            // If we switch PENDING -> CONFIRMED, we normally keep it here.
+
+                            if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'FAILED') {
+                                removeOrderCard(orderId);
+                            } else {
+                                // Update DOM in-place to keep modal open
+                                const card = document.getElementById('order-card-' + orderId);
+                                if (card) {
+                                    // 1. Update Badge
+                                    const badge = card.querySelector('.badge:first-of-type'); // Assuming first badge is status badge in the header row
+                                    // Actually the status badge is inside h6 parent div. Let's find it more robustly or just querySelector('.badge') inside the name row.
+                                    // Structure: div.d-flex > h6 ... span.badge
+                                    // Let's use specific class or position.
+                                    // The badge is the *second* child of the d-flex container (h6 is first).
+                                    // Or just find badge with text content? No.
+                                    // Let's assume it's the one right after h6.
+                                    const statusBadge = card.querySelector('h6').nextElementSibling;
+
+                                    if (statusBadge) {
+                                        statusBadge.innerText = status;
+                                        statusBadge.className = 'badge'; // Reset
+                                        if (status === 'PENDING') statusBadge.classList.add('bg-warning', 'text-dark');
+                                        else if (status === 'CONFIRMED') statusBadge.classList.add('bg-primary');
+                                        else if (status === 'SHIPPING') statusBadge.classList.add('bg-info', 'text-dark');
+                                        else statusBadge.classList.add('bg-secondary');
+                                    }
+
+                                    // 2. Update Dropdown Value
+                                    const select = card.querySelector('select');
+                                    if (select) select.value = status;
+
+                                    // 3. Remove "Accept" button if status is not PENDING
+                                    if (status !== 'PENDING') {
+                                        const acceptBtn = card.querySelector('.btn-success');
+                                        if (acceptBtn) acceptBtn.remove();
+                                    }
+                                }
+                            }
+                        } else {
+                            alert('Error updating status: ' + data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Network error');
+                    });
+            }
+
+            function removeOrderCard(orderId) {
+                const card = document.getElementById('order-card-' + orderId);
+                if (card) {
+                    card.remove();
+                    // Update badge logic
+                    const badge = document.querySelector('button[data-bs-target="#onlineOrdersModal"] .badge');
+                    if (badge) {
+                        let count = parseInt(badge.innerText);
+                        if (count > 1) {
+                            badge.innerText = count - 1;
+                        } else {
+                            badge.remove();
+                            // Show "No active" msg?
+                            const list = document.getElementById('pending-list');
+                            if (list && list.children.length === 0) {
+                                list.innerHTML = `
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                                    <p>No active orders.</p>
+                                </div>`;
+                            }
+                        }
+                    }
+                }
+            }
+
+        </script>
+
+        <!-- CSRF Token Meta (Standard Spring Security) -> Usually in Layout, but let's ensure it's picked up if layout has it -->
+    </div>
+</body>
+
+</html>

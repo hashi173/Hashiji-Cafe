@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Expense Management</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0 fw-bold">Expense Tracking</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#expenseModal">
+                <i class="fas fa-plus me-2"></i> Add Expense
+            </button>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-3">
+                <form action="/admin/expenses" method="get" class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label fw-bold">Search:</label>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Description or Category..."
+                            th:value="${search}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        <a href="/admin/expenses" class="btn btn-outline-secondary" title="Clear"><i
+                                class="fas fa-times"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="expense : ${expenses}">
+                                <td class="ps-4" th:text="${expense.expenseDate}">2026-01-01</td>
+                                <td th:text="${expense.description}">Electricity Bill</td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${expense.category}">Utilities</span>
+                                </td>
+                                <td class="fw-bold text-danger"
+                                    th:text="${#numbers.formatDecimal(expense.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                    1,000,000 đ
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a class="btn btn-sm btn-outline-danger"
+                                        th:href="@{/admin/expenses/delete/{id}(id=${expense.id})}"
+                                        onclick="return confirm('Are you sure?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${expenses.empty}">
+                                <td colspan="5" class="text-center py-4 text-muted">No expenses recorded yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Modal -->
+        <div class="modal fade" id="expenseModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/admin/expenses/save}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Record Expense</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <input type="text" name="description" class="form-control"
+                                    placeholder="e.g. Purchase Milk" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Amount (VND)</label>
+                                    <input type="number" name="amount" class="form-control" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" name="expenseDate" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="Ingredients">Ingredients</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Salary">Salary</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Save Expense</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <!-- Pagination -->
+        <div
+            th:replace="~{admin/fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/admin/expenses', ${search}, 'page')}">
+        </div>
+
+    </div>
+</body>
+
+</html>

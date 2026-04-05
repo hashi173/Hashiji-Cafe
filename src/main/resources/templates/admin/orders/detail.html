@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Order Detail</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Order Detail <span class="text-muted fs-4" th:text="'#' + ${order.id}">#123</span></h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="/admin/orders" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Orders
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Customer Info & Status -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-3">Customer Information</h5>
+                        <p class="mb-1"><i class="fas fa-barcode col-1 text-muted"></i> <strong>Tracking Code:</strong>
+                            <span class="text-primary fw-bold" th:text="${order.trackingCode}"></span></p>
+                        <hr>
+                        <p class="mb-1"><i class="fas fa-user col-1 text-muted"></i> <span
+                                th:text="${order.customerName}"></span></p>
+                        <p class="mb-1"><i class="fas fa-phone col-1 text-muted"></i> 
+                            <a th:href="'tel:' + ${order.phone}" class="text-decoration-none fw-bold" th:text="${order.phone}"></a>
+                        </p>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt col-1 text-muted"></i> <span
+                                th:text="${order.address}"></span></p>
+                        <div class="alert alert-warning mt-3" th:if="${order.note != null && !order.note.isEmpty()}">
+                            <i class="fas fa-sticky-note me-2"></i> <strong>Note:</strong> <span
+                                th:text="${order.note}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-3">Order Status</h5>
+                        <form th:action="@{'/admin/orders/' + ${order.id} + '/status'}" method="post">
+                            <div class="mb-3">
+                                <label for="status" class="form-label text-muted">Current Status</label>
+                                <select class="form-select form-select-lg fw-bold" name="status" id="status"
+                                    onchange="this.form.submit()"
+                                    th:classappend="${order.status.name() == 'PENDING' ? 'text-warning' : 
+                                                     (order.status.name() == 'CONFIRMED' ? 'text-info' : 
+                                                     (order.status.name() == 'SHIPPING' ? 'text-primary' : 
+                                                     (order.status.name() == 'COMPLETED' ? 'text-success' : 'text-danger')))}">
+                                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                                        th:selected="${s == order.status}"></option>
+                                </select>
+                            </div>
+                            <!-- Helper text -->
+                            <small class="text-muted d-block text-center lh-sm">
+                                Change status to process usage flow:<br>
+                                Pending -> Confirmed -> Shipping -> Completed
+                            </small>
+                        </form>
+                        <hr>
+                        <div class="d-grid gap-2" th:if="${order.status.name() != 'COMPLETED' && order.status.name() != 'CANCELLED'}">
+                            <form th:action="@{'/admin/orders/' + ${order.id} + '/cancel'}" method="post">
+                                <button type="submit" class="btn btn-danger w-100 rounded-pill"
+                                    onclick="return confirm('Are you sure you want to cancel this order?')">
+                                    <i class="fas fa-times me-2"></i> Cancel Order
+                                </button>
+                            </form>
+                            <a th:href="'tel:' + ${order.phone}" class="btn btn-success rounded-pill">
+                                <i class="fas fa-phone me-2"></i> Contact Customer
+                            </a>
+                        </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title fw-bold mb-0">Items Ordered</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Product</th>
+                                        <th>Size</th>
+                                        <th>Toppings</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end pe-4">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="detail : ${order.orderDetails}">
+                                        <td class="ps-4">
+                                            <span class="fw-bold" th:text="${detail.productName}">Latte</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border"
+                                                th:text="${detail.sizeSelected}">L</span>
+                                        </td>
+                                        <td>
+                                            <ul class="list-unstyled mb-0 small text-muted">
+                                                <li th:each="topping : ${detail.selectedToppings}"
+                                                    th:text="${topping.toppingName}">Pearl</li>
+                                            </ul>
+                                        </td>
+                                        <td class="text-center fw-bold" th:text="${detail.quantity}">2</td>
+                                        <td class="text-end pe-4 fw-bold">
+                                            <span
+                                                th:text="${#numbers.formatDecimal(detail.priceAtPurchase * detail.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000
+                                                đ</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-light">
+                                    <tr>
+                                        <td colspan="4" class="text-end fw-bold py-3 fs-5">Total Amount:</td>
+                                        <td class="text-end pe-4 fw-bold py-3 fs-5 text-primary"
+                                            th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                            200,000 đ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

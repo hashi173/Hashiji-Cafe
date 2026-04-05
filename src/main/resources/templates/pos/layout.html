@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+
+<head>
+    <meta charset="UTF-8">
+    <title>POS - Coffee Shop</title>
+    <!-- CSRF Token -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        html {
+            font-size: 13px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            overflow: hidden;
+            /* Full screen feel */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Minimal Header for User Info / Logout -->
+    <nav class="navbar navbar-dark bg-dark px-3 py-2">
+        <span class="navbar-brand mb-0 h1"><i class="fas fa-mug-hot me-2"></i>Coffee POS</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-white small">
+                <i class="fas fa-user-circle me-1"></i>
+                <span th:text="${#authentication.name}">Staff</span>
+            </span>
+            <span class="text-white small" id="clock">00:00</span>
+            <!-- Language Switcher Removed -->
+            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#endShiftModal">
+                Close Shift
+            </button>
+        </div>
+    </nav>
+
+    <!-- End Shift Modal -->
+    <div class="modal fade" id="endShiftModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/pos/shift/end}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Close Shift</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-dark">
+                        <div class="mb-3">
+                            <label class="form-label">Closing Cash Amount (vnđ)</label>
+                            <input type="number" name="endCash" class="form-control" required min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">End & Logout</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Injection -->
+    <div th:replace="${content}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+
+</html>

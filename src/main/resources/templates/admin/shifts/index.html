@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Shift & Payroll</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0 fw-bold">Shift History & Payroll</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addShiftModal">
+                <i class="fas fa-plus me-2"></i>Add Shift
+            </button>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-3">
+                <form action="/admin/shifts" method="get" class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label fw-bold">Search:</label>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Staff Name..."
+                            th:value="${search}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        <a href="/admin/shifts" class="btn btn-outline-secondary" title="Clear"><i
+                                class="fas fa-times"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div th:if="${isSearching}" class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Search Results</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Staff</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Duration</th>
+                                <th>Cash Flow (Start -> End)</th>
+                                <th>Total Revenue</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="shift : ${searchResults}">
+                                <td class="ps-4 fw-bold" th:text="${shift.user.fullName}">Staff Name</td>
+                                <td th:text="${#temporals.format(shift.startTime, 'dd-MM HH:mm')}">01-01 08:00</td>
+                                <td
+                                    th:text="${shift.endTime != null ? #temporals.format(shift.endTime, 'dd-MM HH:mm') : '-'}">
+                                    -</td>
+                                <td>
+                                    <span th:if="${shift.endTime != null}"
+                                        th:with="duration=${T(java.time.Duration).between(shift.startTime, shift.endTime).toMinutes()}">
+                                        <span th:text="${duration / 60} + 'h ' + ${duration % 60} + 'm'">8h 30m</span>
+                                    </span>
+                                    <span th:unless="${shift.endTime != null}">Running</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted"
+                                        th:text="${#numbers.formatDecimal(shift.startCash, 0, 'COMMA', 0, 'POINT')}"></small>
+                                    <i class="fas fa-arrow-right mx-1 text-secondary small"></i>
+                                    <small class="text-muted"
+                                        th:text="${shift.endCash != null ? #numbers.formatDecimal(shift.endCash, 0, 'COMMA', 0, 'POINT') : '?'}"></small>
+                                </td>
+                                <td class="text-success fw-bold"
+                                    th:text="${shift.totalRevenue != null ? #numbers.formatDecimal(shift.totalRevenue, 0, 'COMMA', 0, 'POINT') : 0}">
+                                    0</td>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${shift.status == 'OPEN' ? 'bg-success' : 'bg-secondary'}"
+                                        th:text="${shift.status}">CLOSED</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a th:href="@{'/admin/shifts/' + ${shift.id}}"
+                                        class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-3">
+                <div
+                    th:replace="~{admin/fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/admin/shifts', ${search}, 'activePage')}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Default View: Dual Tables -->
+        <div th:unless="${isSearching}">
+            <!-- Active / Open Shifts -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-clock me-2"></i>Active / Running Shifts</h5>
+                    <span class="badge bg-light text-success fs-6" th:text="${totalActiveCount} + ' Running'">0
+                        Running</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Staff</th>
+                                    <th>Start Time</th>
+                                    <th>Duration</th>
+                                    <th>Est. Pay</th>
+                                    <th>Starting Cash</th>
+                                    <th>Current Revenue</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="shift : ${activeShifts}">
+                                    <td class="ps-4 fw-bold" th:text="${shift.user.fullName}">Staff Name</td>
+                                    <td th:text="${#temporals.format(shift.startTime, 'dd-MM HH:mm')}">01-01 08:00</td>
+                                    <td>
+                                        <span class="text-success fw-bold">Running</span>
+                                        <small class="text-muted ms-1"
+                                            th:text="'(' + ${#temporals.format(shift.startTime, 'HH:mm')} + ' - Now)'"></small>
+                                    </td>
+                                    <td class="text-primary fw-bold"
+                                        th:text="${#numbers.formatDecimal(shift.estimatedPay, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        0 đ</td>
+                                    <td th:text="${#numbers.formatDecimal(shift.startCash, 0, 'COMMA', 0, 'POINT')}">
+                                    </td>
+                                    <td class="text-success fw-bold"
+                                        th:text="${shift.totalRevenue != null ? #numbers.formatDecimal(shift.totalRevenue, 0, 'COMMA', 0, 'POINT') : 'Calculating...'}">
+                                        0</td>
+                                    <td><span class="badge bg-success">OPEN</span></td>
+                                    <td class="text-end pe-4">
+                                        <a th:href="@{'/admin/shifts/' + ${shift.id}}"
+                                            class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i>
+                                            Manage</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(activeShifts)}">
+                                    <td colspan="7" class="text-center py-4 text-muted">No active shifts.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div
+                        th:replace="~{admin/fragments/pagination :: pagination(${activePage}, ${totalActivePages}, '/admin/shifts', ${search}, 'activePage')}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shift History -->
+            <div class="card border-0 shadow-sm border-secondary mt-4">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2"></i>Shift History</h5>
+                    <span class="badge bg-light text-secondary fs-6" th:text="${totalHistoryCount} + ' Closed'">0
+                        Closed</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-muted">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Staff</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                    <th>Est. Pay</th>
+                                    <th>Cash Flow</th>
+                                    <th>Total Revenue</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="shift : ${historyShifts}">
+                                    <td class="ps-4 fw-bold" th:text="${shift.user.fullName}">Staff Name</td>
+                                    <td th:text="${#temporals.format(shift.startTime, 'dd-MM HH:mm')}">01-01 08:00</td>
+                                    <td th:text="${#temporals.format(shift.endTime, 'dd-MM HH:mm')}">01-01 17:00</td>
+                                    <td>
+                                        <span
+                                            th:with="duration=${T(java.time.Duration).between(shift.startTime, shift.endTime).toMinutes()}">
+                                            <span th:text="${duration / 60} + 'h ' + ${duration % 60} + 'm'">8h
+                                                30m</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-primary fw-bold"
+                                        th:text="${#numbers.formatDecimal(shift.estimatedPay, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        0 đ</td>
+                                    <td>
+                                        <small class="text-muted"
+                                            th:text="${#numbers.formatDecimal(shift.startCash, 0, 'COMMA', 0, 'POINT')}"></small>
+                                        <i class="fas fa-arrow-right mx-1 text-secondary small"></i>
+                                        <small class="text-muted"
+                                            th:text="${shift.endCash != null ? #numbers.formatDecimal(shift.endCash, 0, 'COMMA', 0, 'POINT') : '?'}"></small>
+                                    </td>
+                                    <td class="text-success fw-bold"
+                                        th:text="${shift.totalRevenue != null ? #numbers.formatDecimal(shift.totalRevenue, 0, 'COMMA', 0, 'POINT') : 0}">
+                                        0</td>
+                                    <td><span class="badge bg-secondary">CLOSED</span></td>
+                                    <td class="text-end pe-4">
+                                        <a th:href="@{'/admin/shifts/' + ${shift.id}}"
+                                            class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye me-1"></i>
+                                            Details</a>
+                                        <!-- Delete Button -->
+                                        <button class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal"
+                                            th:data-bs-target="'#deleteShiftModal' + ${shift.id}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" th:id="'deleteShiftModal' + ${shift.id}" tabindex="-1">
+                                            <div class="modal-dialog modal-sm">
+                                                <div class="modal-content text-start">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title fw-bold">Delete Shift?</h5>
+                                                        <button type="button" class="btn-close"
+                                                            data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to delete this shift record?</p>
+                                                        <small class="text-danger d-block">This action cannot be
+                                                            undone.</small>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm"
+                                                            data-bs-dismiss="modal">Cancel</button>
+                                                        <form th:action="@{'/admin/shifts/' + ${shift.id} + '/delete'}"
+                                                            method="post">
+                                                            <button type="submit"
+                                                                class="btn btn-danger btn-sm">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(historyShifts)}">
+                                    <td colspan="9" class="text-center py-4 text-muted">No shift history found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div
+                        th:replace="~{admin/fragments/pagination :: pagination(${historyPage}, ${totalHistoryPages}, '/admin/shifts', ${search}, 'historyPage')}">
+                    </div>
+                </div>
+
+                <!-- Add Shift Modal -->
+                <div class="modal fade" id="addShiftModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <form th:action="@{/admin/shifts/create}" method="post">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title fw-bold"><i class="fas fa-plus me-2"></i>Add Manual Shift
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" style="font-size: 1.2rem;">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold fs-5">Staff Member</label>
+                                        <select name="userId" class="form-select form-select-lg" required>
+                                            <option value="" disabled selected>Select Staff...</option>
+                                            <option th:each="u : ${users}" th:value="${u.id}"
+                                                th:text="${u.fullName} + ' (' + ${u.username} + ')'"></option>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label fw-bold fs-5">Start Time</label>
+                                            <input type="datetime-local" name="startTime"
+                                                class="form-control form-control-lg" required>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label fw-bold fs-5">End Time (Optional)</label>
+                                            <input type="datetime-local" name="endTime"
+                                                class="form-control form-control-lg">
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Leave "End Time" empty to start a currently <strong>Active</strong> shift.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-lg"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary btn-lg">Create Shift</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+</body>
+
+</html>

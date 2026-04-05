@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::div})}">
+
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <a href="/admin/history" class="text-decoration-none text-dark"><i
+                        class="fas fa-arrow-left me-2"></i></a>
+                Details for <span th:text="${monthName} + ' ' + ${year}">January 2025</span>
+            </h2>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Revenue</h6>
+                        <p class="card-text fs-3 fw-bold"
+                            th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Expenses</h6>
+                        <p class="card-text fs-3 fw-bold"
+                            th:text="${#numbers.formatDecimal(totalExpenses, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white h-100" th:classappend="${netProfit >= 0 ? 'bg-primary' : 'bg-warning'}">
+                    <div class="card-body">
+                        <h6 class="card-title">Net Profit</h6>
+                        <p class="card-text fs-3 fw-bold"
+                            th:text="${#numbers.formatDecimal(netProfit, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Orders Table -->
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">Orders (Completed)</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#Order</th>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${orders}">
+                                    <td>
+                                        <span class="fw-bold" th:text="${order.trackingCode}">ORD-123</span>
+                                        <div class="small text-muted" th:if="${order.customerName}"
+                                            th:text="${order.customerName}">Name</div>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.createdAt, 'dd-MM HH:mm')}">01-01 12:00</td>
+                                    <td><span class="badge bg-secondary" th:text="${order.orderType}">POS</span></td>
+                                    <td class="fw-bold text-end pe-4"
+                                        th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        50,000 đ</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(orders)}">
+                                    <td colspan="4" class="text-center py-3 text-muted">No orders found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Order Pagination -->
+                <div class="card-footer bg-white border-top-0">
+                    <div
+                        th:replace="~{admin/fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/admin/history/details?month=' + ${month} + '&year=' + ${year}, '', 'page')}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 text-danger">Expenses</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="expense : ${expenses}">
+                                <td th:text="${#temporals.format(expense.expenseDate, 'dd-MM')}">01-01</td>
+                                <td>
+                                    <div class="fw-bold" th:text="${expense.category}">Category</div>
+                                    <small class="text-muted" th:text="${expense.description}">Desc</small>
+                                </td>
+                                <td class="fw-bold text-end pe-4"
+                                    th:text="${#numbers.formatDecimal(expense.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                    1,000,000 đ</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(expenses)}">
+                                <td colspan="3" class="text-center py-3 text-muted">No expenses recorded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</body>
+
+</html>

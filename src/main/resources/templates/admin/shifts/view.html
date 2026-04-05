@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Shift Details</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0 fw-bold">Shift Details #<span th:text="${shift.id}"></span></h2>
+            <a href="/admin/shifts" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Back to
+                History</a>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Summary Info -->
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">General Info</div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="text-muted w-50">Staff Member</td>
+                                <td class="fw-bold" th:text="${shift.user.fullName}">Name</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Start Time</td>
+                                <td th:text="${#temporals.format(shift.startTime, 'dd-MM-yyyy HH:mm:ss')}"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">End Time</td>
+                                <td
+                                    th:text="${shift.endTime != null ? #temporals.format(shift.endTime, 'dd-MM-yyyy HH:mm:ss') : 'Ongoing'}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Status</td>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${shift.status == 'OPEN' ? 'bg-success' : 'bg-secondary'}"
+                                        th:text="${shift.status}"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials -->
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Financials</div>
+                    <div class="card-body">
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Start Cash</small>
+                                <span class="h5"
+                                    th:text="${#numbers.formatDecimal(shift.startCash, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">End Cash (Declared)</small>
+                                <span class="h5"
+                                    th:text="${shift.endCash != null ? #numbers.formatDecimal(shift.endCash, 0, 'COMMA', 0, 'POINT') + ' đ' : '-'}"></span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>System Revenue (Pos Orders):</span>
+                            <span class="fw-bold text-success"
+                                th:text="${shift.totalRevenue != null ? #numbers.formatDecimal(shift.totalRevenue, 0, 'COMMA', 0, 'POINT') : 0} + ' đ'"></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center" th:if="${shift.endCash != null}">
+                            <span>Cash Variance:</span>
+                            <!-- Variance = (End - Start) - Revenue -->
+                            <span
+                                th:with="variance=${(shift.endCash - shift.startCash) - (shift.totalRevenue != null ? shift.totalRevenue : 0)}"
+                                th:class="${variance >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}"
+                                th:text="${(variance > 0 ? '+' : '') + #numbers.formatDecimal(variance, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2 fst-italic">Positive variance means surplus, negative
+                            means shortage.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Summary -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold">Items Sold Summary</div>
+            <div class="card-body">
+                <div class="row row-cols-md-3 g-3">
+                    <div class="col" th:each="entry : ${productSummary}">
+                        <div class="d-flex justify-content-between border-bottom pb-2">
+                            <span th:text="${entry.key}">Latte (S)</span>
+                            <span class="fw-bold badge bg-primary" th:text="${entry.value}">5</span>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${productSummary.empty}" class="text-center text-muted">No items sold.</div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                <span>Orders Sold During Shift (<span th:text="${#lists.size(orders)}"></span>)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Order ID</th>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(orders)}">
+                                <td colspan="7" class="text-center py-4 text-muted">No orders found for this shift.</td>
+                            </tr>
+                            <tr th:each="order : ${orders}">
+                                <td class="ps-4">
+                                    <span class="fw-bold text-primary" th:text="${order.trackingCode}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(order.createdAt, 'HH:mm dd-MM')}"></td>
+                                <td th:text="${order.customerName}"></td>
+                                <td>
+                                    <small th:each="detail : ${order.orderDetails}" class="d-block text-muted">
+                                        <span th:text="${detail.quantity} + 'x ' + ${detail.productName}"></span>
+                                    </small>
+                                </td>
+                                <td class="fw-bold"
+                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                </td>
+                                <td>
+                                    <span class="badge bg-success" th:text="${order.status}">COMPLETED</span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-light"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

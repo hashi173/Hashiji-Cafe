@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+
+<head>
+    <title>Home - Hashiji Café</title>
+</head>
+
+<body>
+    <div th:fragment="content" class="overflow-hidden bg-texture-paper" style="min-height: 100vh;">
+
+        <!-- ============================== -->
+        <!-- SECTION 1: HERO               -->
+        <!-- ============================== -->
+        <section id="hero" class="position-relative d-flex align-items-center" style="min-height: 90vh;">
+            <!-- Surreal Floating Elements -->
+            <div class="position-absolute w-100 h-100" style="z-index: 0; pointer-events: none;">
+                <img src="/images/home/CoffeeCup.png" class="position-absolute float-slow"
+                    style="top: 24%; left: -20%; width: 600px; opacity: 0.5; filter: blur(3px);" alt="Coffee Cup">
+                <img src="/images/home/Leaf.png" class="position-absolute float-medium"
+                    style="bottom: 10%; right: 5%; width: 200px; opacity: 0.4;" alt="Leaf">
+                <div class="position-absolute bg-white opacity-50 rounded-circle shadow-lg float-fast"
+                    style="top: 25%; right: 20%; width: 150px; height: 150px;"></div>
+            </div>
+
+            <div class="container position-relative z-1">
+                <div class="row align-items-center">
+                    <div class="col-lg-5 offset-lg-1 text-center text-lg-start position-relative mb-5 mb-lg-0">
+                        <div class="position-absolute top-50 start-50 start-lg-0 translate-middle bg-primary rounded-circle opacity-10 float-fast"
+                            style="width: 300px; height: 300px; filter: blur(50px); z-index: -1;"></div>
+
+                        <span class="d-block text-primary small text-uppercase letter-spacing-2 mb-3 text-lift"
+                            th:text="#{home.since}">Since 2026</span>
+
+                        <h1 class="display-1 fw-bold mb-4 text-lift" style="color: var(--primary);">
+                            <span th:text="#{home.brand}">Hashiji.</span><br>
+                            <span class="display-4 fw-light fst-italic text-lift-grey" style="color: #002147;"
+                                th:text="#{home.tagline}">Pretty "Good" Coffee</span>
+                        </h1>
+
+                        <p class="lead mb-5 text-dark text-lift-grey mx-auto mx-lg-0" style="max-width: 400px; text-align: justify;"
+                            th:text="#{home.description}">
+                            Suspended in the moment. A surreal experience where coffee meets weightlessness. Drifting notes of cobalt and cream.
+                        </p>
+
+                        <div class="d-flex gap-3 text-lift justify-content-center justify-content-lg-start">
+                            <a href="#menu" class="btn btn-primary text-white shadow-lg"
+                                th:text="#{home.cta.menu}">Enter Void</a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 position-relative mt-lg-0" style="min-height: 400px;">
+                        <div class="position-relative h-100 w-100">
+                            <img src="https://hipsters.ua/wp-content/uploads/2021/04/img_3881-1.jpg"
+                                class="position-absolute img-droplet float-medium shadow-lg z-1 hero-img-main"
+                                alt="Floating Coffee Art">
+                            <img src="https://d35jj3xv1zfqx0.cloudfront.net/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaE4vIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--ffd901f47aa817c60675d4bcedce810c96d52355/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RkhKbGMybDZaVjkwYjE5c2FXMXBkRnNIYVFJQUEya0NBQU09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--d920922bca360c5b28e589e2606ff8d2f20e3b35/CS115-P_ZWB_Thumbnail_CoffeeBags_Pouch_Base.jpg"
+                                class="position-absolute img-droplet float-slow shadow-lg z-2 hero-img-sub"
+                                alt="Floating Coffee Bag">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 2: ABOUT US            -->
+        <!-- ============================== -->
+        <section id="about" class="bg-texture-paper" style="padding: 4rem 0;">
+            <!-- Hero: The Quest Begins -->
+            <div class="position-relative d-flex align-items-center justify-content-center text-center"
+                style="min-height: 40vh;">
+                <div class="position-absolute w-100 h-100" style="z-index: 0;">
+                    <img src="/images/about/Map.png" class="position-absolute opacity-10 float-slow"
+                        style="top: 5%; left: 5%; width: 30rem; filter: sepia(100%) hue-rotate(190deg) saturate(400%) blur(2px);">
+                    <i class="fas fa-compass text-primary opacity-10 float-medium position-absolute"
+                        style="bottom: 30%; right: 15%; font-size: 6rem;"></i>
+                </div>
+
+                <div class="container position-relative z-1">
+                    <h2 class="display-3 mb-3 float-slow" th:text="#{about.hero}">The Journey</h2>
+                    <p class="lead text-muted mx-auto float-medium" style="max-width: 600px;"
+                        th:text="#{about.description}">
+                        Every cup is a save point.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="container cloud-path-container" style="padding: 2rem 0;">
+                <div class="cloud-path-line d-none d-md-block"></div>
+                <!-- Milestone 1: Origin -->
+                <div class="row align-items-center mb-4 justify-content-center">
+                    <div class="col-md-3 text-end pe-md-3">
+                        <div class="floating-island island-left float-slow d-flex flex-column align-items-center justify-content-center text-center"
+                            style="padding: 1.5rem;">
+                            <h3 class="h3 fw-bold text-primary fs-1-5x" th:text="#{about.origin.title}">The Origin</h3>
+                            <span class="badge bg-secondary mb-2 fs-1-5x" style="font-size: 0.7rem;">Est. 2023</span>
+                            <p class="small fs-1-5x" th:utext="#{about.origin.desc}">It began with a single bean.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 ps-md-3">
+                        <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            class="img-fluid img-droplet float-medium shadow-lg" style="max-height: 15rem;" alt="Coffee Origin">
+                    </div>
+                </div>
+                <!-- Milestone 2: Craft -->
+                <div class="row align-items-center mb-4 flex-md-row-reverse justify-content-center">
+                    <div class="col-md-3 text-start ps-md-3">
+                        <div class="floating-island island-right float-medium d-flex flex-column align-items-center justify-content-center text-center"
+                            style="padding: 1.5rem;">
+                            <h3 class="h3 fw-bold text-primary fs-1-5x" th:text="#{about.craft.title}">Specialization</h3>
+                            <span class="badge bg-accent text-dark mb-2 fs-1-5x" style="font-size: 0.7rem;" th:text="#{about.craft.badge}">Artisan Roasting</span>
+                            <p class="small fs-1-5x" th:text="#{about.craft.desc}">Small-batch roasting.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 pe-md-3 text-center">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            class="img-fluid img-droplet float-slow shadow-lg" style="max-height: 15rem;" alt="Roasting">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bean Stats -->
+            <div class="container py-3">
+                <div class="text-center mb-4">
+                    <h2 class="display-5 float-slow" th:text="#{about.stats.title}">Great Beans</h2>
+                    <p class="text-muted" th:text="#{about.stats.subtitle}">Equipped items for your daily brew.</p>
+                </div>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-md-4">
+                        <div class="rpg-card h-100 float-medium">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary text-white rounded-circle p-2 me-3">
+                                    <i class="fas fa-leaf fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h3 fw-bold mb-0 fs-1-5x" th:text="#{about.stats.arabica}">Arabica Essence</h4>
+                                    <small class="text-muted text-uppercase fs-1-5x"
+                                        th:text="#{about.rarity.legendary}">Legendary</small>
+                                </div>
+                            </div>
+                            <p class="small mb-3 fs-1-5x" th:text="#{about.stats.arabica.desc}">High altitude clarity.</p>
+                            <div class="mb-1">
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Acidity</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-1">
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Aroma</span>
+                                    <span>95%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill" style="width: 95%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Bitterness</span>
+                                    <span>30%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill" style="width: 30%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rpg-card h-100 float-fast" style="animation-delay: 0.5s;">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-dark text-white rounded-circle p-2 me-3">
+                                    <i class="fas fa-bolt fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="h3 fw-bold mb-0 fs-1-5x" th:text="#{about.stats.robusta}">Robusta Core</h4>
+                                    <small class="text-muted text-uppercase fs-1-5x"
+                                        th:text="#{about.rarity.epic}">Epic</small>
+                                </div>
+                            </div>
+                            <p class="small mb-3 fs-1-5x" th:text="#{about.stats.robusta.desc}">Strong and bold.</p>
+                            <div class="mb-1">
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Caffeine</span>
+                                    <span>98%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill bg-dark" style="width: 98%;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-1">
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Body</span>
+                                    <span>90%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill bg-dark" style="width: 90%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between small fw-bold fs-1-5x"><span>Sweetness</span>
+                                    <span>10%</span>
+                                </div>
+                                <div class="rpg-stat-bar">
+                                    <div class="rpg-stat-fill bg-dark" style="width: 10%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Party (Team) -->
+            <div class="container py-3 mb-3">
+                <div class="text-center mb-4">
+                    <h2 class="display-5 float-slow" th:text="#{about.team.title}">The Party</h2>
+                    <p class="text-muted" th:text="#{about.team.subtitle}">Meet your companions.</p>
+                </div>
+                <div class="row g-4 justify-content-center">                     <div class="col-lg-3 col-md-4">
+                        <div class="char-card float-hover-effect d-flex flex-column align-items-center">
+                            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                                alt="Mochi" style="width: 120px; height: 120px;">
+                            <span class="char-role fs-1-5x" th:text="#{about.team.role1}">All-day Napper</span>
+                            <h4 class="h3 fw-bold fs-1-5x">Mochi</h4>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <div class="char-card float-hover-effect d-flex flex-column align-items-center">
+                            <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                                alt="Yuzu" style="width: 120px; height: 120px;">
+                            <span class="char-role fs-1-5x" th:text="#{about.team.role2}">Mouse Hunter</span>
+                            <h4 class="h3 fw-bold fs-1-5x">Yuzu</h4>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <div class="char-card float-hover-effect d-flex flex-column align-items-center">
+                            <img src="https://images.unsplash.com/photo-1519052537078-e6302a4968d4?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                alt="Kuma" style="width: 120px; height: 120px;">
+                            <span class="char-role fs-1-5x" th:text="#{about.team.role3}">The crazy&cute one</span>
+                            <h4 class="h3 fw-bold fs-1-5x">Kuma</h4>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 3: MENU (OUR BREWS)    -->
+        <!-- ============================== -->
+        <section id="menu" class="menu-section" style="padding: 4rem 0 3rem 0;">
+            <div class="container-fluid px-5">
+                <div class="text-center mb-4 pb-3">
+                    <span class="d-block text-accent text-uppercase letter-spacing-2 fw-bold mb-2 float-fast"
+                        th:text="#{home.menu.subtitle}">Artisan Collection</span>
+                    <h2 class="display-3 fw-bold mb-3" style="color: var(--primary);"
+                        th:text="#{home.menu.brews}">Our Brews</h2>
+                    <p class="lead text-muted mx-auto" style="max-width: 700px; font-size: 1.3rem;"
+                        th:text="#{home.menu.taste}">Taste the ocean.</p>
+
+                    <!-- Filter Buttons -->
+                    <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap" id="category-filters">
+                        <button class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter active"
+                            hx-get="/products/fragment?categoryId=0" hx-target="#productContainer" hx-swap="outerHTML"
+                            onclick="updateActiveFilter(this)">All</button>
+                        <button th:each="cat : ${categories}" th:hx-get="@{/products/fragment(categoryId=${cat.id})}"
+                            hx-target="#productContainer" hx-swap="outerHTML"
+                            class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter position-relative"
+                            onclick="updateActiveFilter(this)">
+                            <span th:text="${cat.name}">Category</span>
+                            <span th:if="${cat.name == 'Coffee'}" class="position-absolute translate-middle badge"
+                                style="left: 90%; top: 0%; background: #FFD700; width: 40px; height: 40px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); transform: rotate(15deg); filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000);">
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Products Container -->
+                <div id="productCarouselWrapper" class="position-relative py-4">
+                    <!-- Navigation Buttons -->
+                    <button class="carousel-nav-btn carousel-nav-prev" onclick="shiftCarousel(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-nav-btn carousel-nav-next" onclick="shiftCarousel(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+
+                    <div id="productContainer" th:fragment="productList"
+                        class="d-flex flex-row flex-nowrap g-2 px-lg-4 align-items-stretch overflow-hidden" style="transition: transform 0.5s ease;">
+                        <div class="col-12 col-md-4 px-1 product-item" th:each="product : ${products}">
+                            <div class="wave-card fade-in-up">
+                                <div class="wave-img-wrapper">
+                                    <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/600x600?text=Hashiji'}"
+                                        class="wave-img" th:alt="${product.name}"
+                                        onerror="this.src='https://via.placeholder.com/600x600?text=Hashiji'">
+                                </div>
+                                <div class="wave-base"></div>
+                                <div class="wave-info">
+                                    <h4 class="product-title"
+                                        th:text="${#locale.language == 'vi' && product.nameVi != null ? product.nameVi : product.name}"
+                                        style="font-size: 1.4rem;">Product</h4>
+                                    <p class="text-muted small mb-2 text-truncate"
+                                        th:text="${#locale.language == 'vi' && product.descriptionVi != null ? product.descriptionVi : product.description}"
+                                        style="min-height: 20px;">Description</p>
+                                    <span class="product-price fs-5" th:if="${!product.sizes.empty}"
+                                        th:text="${#numbers.formatDecimal(product.sizes[0].price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        55,000 đ
+                                    </span>
+                                    <a th:href="@{'/product/' + ${product.id}}"
+                                        class="btn btn-immersive py-2 px-3 fs-6 mt-2"
+                                        th:text="#{home.menu.tasteit}">Taste It</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${products.empty}" class="col-12 text-center py-5">
+                            <p class="text-muted fs-4 fst-italic float-slow" th:text="#{home.menu.empty}">No brews
+                                found.</p>
+                        </div>
+                    </div> <!-- Closes productContainer -->
+                </div> <!-- Closes productCarouselWrapper -->
+                <!-- Carousel Dots -->
+                <div id="carousel-dots" class="dots-container"></div>
+            </div> <!-- Closes container-fluid -->
+        </section> <!-- Closes section#menu -->
+
+
+        <!-- ============================== -->
+        <!-- SECTION 4: CAREERS             -->
+        <!-- ============================== -->
+        <section id="careers" class="overflow-hidden position-relative bg-watercolor-stars" style="padding: 4rem 0;">
+            <!-- Watercolor Decoration Spots -->
+            <div class="watercolor-spot bg-spot-blue" style="top: -100px; right: -100px;"></div>
+            <div class="watercolor-spot bg-spot-gold" style="bottom: 10%; left: 5%;"></div>
+
+            <!-- Hero: Team -->
+            <div class="container position-relative z-1 text-center" style="padding: 2rem 0;">
+                <i class="fas fa-users text-secondary mb-3 float-fast" style="font-size: 4rem;"></i>
+                <h2 class="display-3 fw-bold text-primary mb-2" th:text="#{careers.hero}">Grow With Us</h2>
+                <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;"
+                    th:text="#{careers.hero.desc}">Looking for passionate talent.</p>
+            </div>
+
+            <!-- Job Constellation -->
+            <div class="container position-relative z-1 pb-4">
+                <div class="text-center mb-4">
+                    <h3 class="display-5 text-secondary mb-3" th:text="#{careers.jobs}">Active Missions</h3>
+                </div>
+
+                <div th:if="${success}" class="alert alert-success bg-transparent border-success text-white w-50 mx-auto mb-4 text-center backdrop-blur">
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+                    <span th:text="${success}"></span><br>
+                    <strong class="text-warning fs-5 mt-2 d-block" th:text="${trackingCode}"></strong>
+                </div>
+
+                <div class="row justify-content-center g-4 perspective-container mt-5">
+                    <div th:each="job : ${jobs}" class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                        <div class="job-star-card float-medium" style="width: 280px; height: 280px; padding: 2.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                            <i class="fas fa-star text-warning mb-3 fs-1"></i>
+                            <h4 class="h4 fw-bold text-white mb-2 fs-1-5x" th:text="${job.title}">Barista</h4>
+                            <p class="text-white-50 mb-3 fs-1-5x">
+                                <i class="fas fa-map-marker-alt me-1"></i> <span th:text="${job.location}">Location</span>
+                            </p>
+                            <button class="btn btn-outline-light rounded-pill px-4 py-2 fs-1-5x"
+                                th:data-position="${job.title}" th:data-description="${job.description}"
+                                onclick="openApplyModal(this.getAttribute('data-position'), this.getAttribute('data-description'))"
+                                th:text="#{careers.initiate_launch}">Apply</button>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(jobs)}" class="col-12 text-center py-4">
+                        <div class="text-white-50">
+                            <i class="fas fa-satellite fa-2x mb-2 float-slow"></i>
+                            <h4>Scanner detects no signals.</h4>
+                            <p>Check back for future transmissions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apply Modal -->
+            <div class="modal fade" id="applyModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-white text-dark border-0 shadow-lg"
+                        style="background: rgba(255,255,255,0.95);">
+                        <div class="modal-header border-bottom">
+                            <h5 class="modal-title">Apply for: <span id="modalPosition"
+                                    class="text-primary">Position</span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/careers/apply}" method="post" enctype="multipart/form-data">
+                            <div class="modal-body">
+                                <div class="mb-3 p-3 rounded bg-light border-start border-4 border-primary">
+                                    <h6 class="text-secondary text-uppercase small letter-spacing-2 mb-2">Role Overview
+                                    </h6>
+                                    <p id="modalDescription" class="mb-0 small text-muted">Job description goes
+                                        here...</p>
+                                </div>
+                                <input type="hidden" name="position" id="positionInput">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted" th:text="#{checkout.fullname}">Full
+                                        Name</label>
+                                    <input type="text" name="fullName" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted" th:text="#{careers.email}">Email</label>
+                                    <input type="email" name="email" class="form-control" required
+                                        pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted" th:text="#{careers.phone}">Phone</label>
+                                    <input type="tel" name="phone" class="form-control" required
+                                        pattern="0[35789][0-9]{8}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted" th:text="#{careers.cv}">CV/Resume</label>
+                                    <input type="file" name="cvFile" class="form-control" accept=".pdf,.doc,.docx"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill"
+                                    data-bs-dismiss="modal" th:text="#{careers.cancel}">Cancel</button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4"
+                                    th:text="#{careers.submit}">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openApplyModal(position, description) {
+                    var modalEl = document.getElementById('applyModal');
+                    if (!modalEl) return;
+                    document.getElementById('modalPosition').textContent = position;
+                    document.getElementById('positionInput').value = position;
+                    document.getElementById('modalDescription').textContent = description;
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        new bootstrap.Modal(modalEl).show();
+                    }
+                }
+            </script>
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 5: INFO & CONTACT      -->
+        <!-- ============================== -->
+        <section id="info" style="padding: 4rem 0;">
+            <div class="container">
+                <div class="row g-5">
+                    <!-- Info Column -->
+                    <div class="col-lg-5">
+                        <h2 class="fw-bold mb-4" th:classappend="${#locale.language == 'vi' ? 'fs-4' : ''}"
+                            th:text="#{info.contact}">Contact Information</h2>
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0 text-primary"><i class="fas fa-map-marker-alt fa-lg"></i></div>
+                            <div class="ms-3">
+                                <h5 class="fw-bold" th:text="#{info.headquarters}">Headquarters</h5>
+                                <p class="text-muted small" th:utext="#{info.address}">123 Coffee Street</p>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0 text-primary"><i class="fas fa-phone-alt fa-lg"></i></div>
+                            <div class="ms-3">
+                                <h5 class="fw-bold" th:text="#{info.phone}">Phone</h5>
+                                <p class="text-muted small">+84 90 123 4567<br><span
+                                        th:text="#{info.phone.hours}">Mon-Fri 9-6</span></p>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0 text-primary"><i class="fas fa-envelope fa-lg"></i></div>
+                            <div class="ms-3">
+                                <h5 class="fw-bold" th:text="#{info.email}">Email</h5>
+                                <p class="text-muted small">hello@coffeehouse.com<br>support@coffeehouse.com</p>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <h3 class="fw-bold mb-3" th:text="#{info.hours}">Opening Hours</h3>
+                        <ul class="list-unstyled">
+                            <li class="d-flex justify-content-between mb-2">
+                                <span th:text="#{info.weekday}">Monday - Friday</span>
+                                <span class="fw-bold" th:text="#{info.weekday.hours}">7:00 AM - 10:00 PM</span>
+                            </li>
+                            <li class="d-flex justify-content-between mb-2">
+                                <span th:text="#{info.weekend}">Saturday - Sunday</span>
+                                <span class="fw-bold" th:text="#{info.weekend.hours}">8:00 AM - 11:00 PM</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Map/Form Column -->
+                    <div class="col-lg-7">
+                        <div th:if="${success}" class="alert alert-success rounded-3 mb-4 shadow-sm" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> <span th:text="#{contact.success}">Message
+                                sent!</span>
+                        </div>
+                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100">
+                            <div class="bg-light" style="height: 250px;">
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.4241686469647!2d106.69842531535616!3d10.778786262100877!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f385570472f%3A0x1787491df961e0f1!2sIndependence%20Palace!5e0!3m2!1sen!2s!4v1645431682703!5m2!1sen!2s"
+                                    width="100%" height="100%" style="border:0;" allowfullscreen=""
+                                    loading="lazy"></iframe>
+                            </div>
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold mb-3" th:text="#{info.message}">Send us a message</h4>
+                                <form th:action="@{/contact}" method="post">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <input type="text" name="name" class="form-control"
+                                                th:placeholder="#{info.name}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="email" name="email" class="form-control"
+                                                placeholder="Your Email" required
+                                                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
+                                        </div>
+                                        <div class="col-12">
+                                            <input type="text" name="subject" class="form-control"
+                                                th:placeholder="#{info.subject}" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <textarea name="message" class="form-control" rows="3"
+                                                th:placeholder="#{info.message.placeholder}" required></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold"
+                                                th:text="#{info.send}">Send Message</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- HTMX Filter Script -->
+        <script>
+            function updateActiveFilter(clickedBtn) {
+                document.querySelectorAll('.category-filter').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.backgroundColor = 'transparent';
+                    btn.style.color = 'var(--primary)';
+                });
+                clickedBtn.classList.add('active');
+                clickedBtn.style.backgroundColor = 'var(--primary)';
+                clickedBtn.style.color = 'white';
+            }
+
+            let currentCarouselPage = 0;
+
+            function updateCarouselView(pageIndex, items, itemsPerPage) {
+                if (!items) items = document.querySelectorAll('.product-item');
+                if (!itemsPerPage) itemsPerPage = (window.innerWidth < 768) ? 1 : 3;
+
+                items.forEach((item, index) => {
+                    const start = pageIndex * itemsPerPage;
+                    const end = start + itemsPerPage;
+                    if (index >= start && index < end) {
+                        item.classList.remove('d-none-slide');
+                    } else {
+                        item.classList.add('d-none-slide');
+                    }
+                });
+                
+                document.querySelectorAll('.dot').forEach((dot, idx) => {
+                    dot.classList.toggle('active', idx === pageIndex);
+                });
+            }
+
+            function shiftCarousel(direction) {
+                const container = document.getElementById('productContainer');
+                if (!container) return;
+                const items = container.querySelectorAll('.product-item');
+                const itemsPerPage = (window.innerWidth < 768) ? 1 : 3;
+                const totalPages = Math.ceil(items.length / itemsPerPage);
+                
+                currentCarouselPage = (currentCarouselPage + direction + totalPages) % totalPages;
+                updateCarouselView(currentCarouselPage, items, itemsPerPage);
+            }
+
+            function initCarousel() {
+                const container = document.getElementById('productContainer');
+                const dotsContainer = document.getElementById('carousel-dots');
+                if (!container || !dotsContainer) return;
+                
+                const items = container.querySelectorAll('.product-item');
+                if (items.length === 0) return;
+
+                const itemsPerPage = (window.innerWidth < 768) ? 1 : 3;
+                const totalPages = Math.ceil(items.length / itemsPerPage);
+                
+                currentCarouselPage = 0;
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i < totalPages; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot' + (i === 0 ? ' active' : '');
+                    dot.onclick = () => {
+                        currentCarouselPage = i;
+                        updateCarouselView(i, items, itemsPerPage);
+                    };
+                    dotsContainer.appendChild(dot);
+                }
+
+                updateCarouselView(0, items, itemsPerPage);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const style = document.createElement('style');
+                style.textContent = `
+                    .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+                    @keyframes fadeInUp {
+                        from { opacity: 0;}
+                        to { opacity: 1;}
+                    }
+                `;
+                document.head.appendChild(style);
+
+                initCarousel();
+                
+                document.body.addEventListener('htmx:afterSwap', function(evt) {
+                    if (evt.detail.target.id === 'productContainer') {
+                        initCarousel();
+                    }
+                });
+
+                window.addEventListener('resize', initCarousel);
+            });
+        </script>
+    </div>
+</body>
+
+</html>

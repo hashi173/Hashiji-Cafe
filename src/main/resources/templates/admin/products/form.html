@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::div})}">
+
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0" th:text="${product.id == null ? 'Create Product' : 'Edit Product'}">Create</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/products/save}" th:object="${product}" method="post" id="productForm"
+                            enctype="multipart/form-data">
+                            <input type="hidden" th:field="*{id}" />
+                            <input type="hidden" th:field="*{image}" />
+
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">Product Name (English)</label>
+                                        <input type="text" class="form-control" th:field="*{name}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Product Name (Vietnamese)</label>
+                                        <input type="text" class="form-control" th:field="*{nameVi}"
+                                            placeholder="Tên sản phẩm (Tiếng Việt)">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Product Image</label>
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="imageSource"
+                                                    id="sourceFile" value="file" checked onchange="toggleImageSource()">
+                                                <label class="form-check-label" for="sourceFile">Upload File</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="imageSource"
+                                                    id="sourceUrl" value="url" onchange="toggleImageSource()">
+                                                <label class="form-check-label" for="sourceUrl">Image URL</label>
+                                            </div>
+                                        </div>
+
+                                        <div id="fileInputContainer" class="mt-2">
+                                            <input type="file" class="form-control" name="imageFile" accept="image/*">
+                                        </div>
+                                        <div id="urlInputContainer" class="mt-2" style="display: none;">
+                                            <input type="text" class="form-control" name="imageUrl" id="imageUrlInput"
+                                                th:value="*{image}" placeholder="https://example.com/image.jpg"
+                                                oninput="updateImagePreview(this.value); syncImageHiddenField(this.value);">
+                                        </div>
+                                        <div th:if="*{image != null}" class="mt-2">
+                                            <small class="text-muted">Current image:</small>
+                                            <img th:src="@{*{image}}" style="height: 50px;" class="ms-2 rounded"
+                                                onerror="this.onerror=null;this.src='https://placehold.co/100';">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description (English)</label>
+                                        <textarea class="form-control" th:field="*{description}" rows="2"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description (Vietnamese)</label>
+                                        <textarea class="form-control" th:field="*{descriptionVi}" rows="2"
+                                            placeholder="Mô tả sản phẩm (Tiếng Việt)"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">AI Search Tags</label>
+                                        <input type="text" class="form-control" th:field="*{tags}"
+                                            placeholder="milk,sữa,cream,kem,sweet,ngọt (comma-separated, EN+VI)">
+                                        <small class="text-muted">Comma-separated keywords in English and Vietnamese for accurate AI chatbot matching.</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Category</label>
+                                        <select class="form-select" th:field="*{category}">
+                                            <option value="">-- Select Category --</option>
+                                            <option th:each="cat : ${categories}" th:value="${cat.id}"
+                                                th:text="${cat.name}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" th:field="*{active}">
+                                        <label class="form-check-label">Active (For Sale)</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Pricing & Sizes</h5>
+                                <button type="button" class="btn btn-sm btn-success" onclick="addSizeRow()">
+                                    <i class="fas fa-plus"></i> Add Size
+                                </button>
+                            </div>
+
+                            <div id="sizeContainer">
+                                <div class="row mb-2 size-row" th:each="size, itemStat : *{sizes}">
+                                    <input type="hidden" th:field="*{sizes[__${itemStat.index}__].id}" />
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control"
+                                            th:field="*{sizes[__${itemStat.index}__].sizeName}"
+                                            placeholder="Size Name (e.g. S, M, L)" required>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="number" class="form-control"
+                                            th:field="*{sizes[__${itemStat.index}__].price}" placeholder="Price (VNĐ)"
+                                            required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)"><i
+                                                class="fas fa-times"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5><i class="fas fa-flask me-2"></i>Recipe / Ingredients</h5>
+                                <button type="button" class="btn btn-sm btn-info text-white" onclick="addRecipeRow()">
+                                    <i class="fas fa-plus"></i> Add Ingredient
+                                </button>
+                            </div>
+                            <p class="text-muted small">Define ingredients required to make this product. Used for
+                                inventory deduction.</p>
+
+                            <div id="recipeContainer">
+                                <div class="row mb-2 recipe-row" th:each="recipe, itemStat : *{recipes}">
+                                    <input type="hidden" th:field="*{recipes[__${itemStat.index}__].id}" />
+                                    <div class="col-md-6">
+                                        <select class="form-select"
+                                            th:field="*{recipes[__${itemStat.index}__].ingredient.id}">
+                                            <option value="">-- Select Ingredient --</option>
+                                            <option th:each="ing : ${ingredients}" th:value="${ing.id}"
+                                                th:text="${ing.name} + ' (' + ${ing.unit} + ')'"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" step="0.01" class="form-control"
+                                            th:field="*{recipes[__${itemStat.index}__].quantityRequired}"
+                                            placeholder="Quantity">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger w-100"
+                                            onclick="removeRecipeRow(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save Product</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:inline="javascript">
+            function toggleImageSource() {
+                const isFile = document.getElementById('sourceFile').checked;
+                document.getElementById('fileInputContainer').style.display = isFile ? 'block' : 'none';
+                document.getElementById('urlInputContainer').style.display = isFile ? 'none' : 'block';
+            }
+
+            function updateImagePreview(url) {
+                const img = document.querySelector('.mt-2 img');
+                if (img && url) {
+                    img.src = url;
+                    img.onerror = function () {
+                        this.onerror = null;
+                        this.src = 'https://placehold.co/100';
+                    };
+                }
+            }
+
+            function syncImageHiddenField(url) {
+                // Keep hidden field in sync with URL input
+                const hiddenField = document.querySelector('input[name="image"]');
+                if (hiddenField && url) {
+                    hiddenField.value = url;
+                }
+            }
+
+            function addSizeRow() {
+                const container = document.getElementById('sizeContainer');
+                const index = container.children.length;
+
+                const html = `
+                <div class="row mb-2 size-row">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="sizes[${index}].sizeName" placeholder="Size Name (S, M, L)" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="number" class="form-control" name="sizes[${index}].price" placeholder="Price" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            `;
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            function removeRow(btn) {
+                const row = btn.closest('.size-row');
+                row.remove();
+                reindexRows();
+            }
+
+            function reindexRows() {
+                const rows = document.querySelectorAll('.size-row');
+                rows.forEach((row, idx) => {
+                    const inputs = row.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        if (input.name.includes('sizes[')) {
+                            input.name = input.name.replace(/sizes\[\d+\]/, `sizes[${idx}]`);
+                        }
+                    });
+                });
+            }
+
+            // Recipe Row Functions
+            const ingredientOptions = /*[[${ingredientsJson}]]*/ '[]';
+
+            function addRecipeRow() {
+                const container = document.getElementById('recipeContainer');
+                const index = container.children.length;
+
+                let optionsHtml = '<option value="">-- Select Ingredient --</option>';
+                try {
+                    const ingredients = JSON.parse(ingredientOptions);
+                    ingredients.forEach(ing => {
+                        optionsHtml += `<option value="${ing.id}">${ing.name} (${ing.unit})</option>`;
+                    });
+                } catch (e) {
+                    console.error('Error parsing ingredients', e);
+                }
+
+                const html = `
+                <div class="row mb-2 recipe-row">
+                    <div class="col-md-6">
+                        <select class="form-select" name="recipes[${index}].ingredient.id">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.01" class="form-control" name="recipes[${index}].quantityRequired" placeholder="Quantity">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger w-100" onclick="removeRecipeRow(this)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            `;
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            function removeRecipeRow(btn) {
+                const row = btn.closest('.recipe-row');
+                row.remove();
+                reindexRecipeRows();
+            }
+
+            function reindexRecipeRows() {
+                const rows = document.querySelectorAll('.recipe-row');
+                rows.forEach((row, idx) => {
+                    const inputs = row.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        if (input.name && input.name.includes('recipes[')) {
+                            input.name = input.name.replace(/recipes\[\d+\]/, `recipes[${idx}]`);
+                        }
+                    });
+                });
+            }
+        </script>
+    </div>
+</body>
+
+</html>

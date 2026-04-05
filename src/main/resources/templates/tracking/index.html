@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+
+<head>
+    <title>Track Order - The Coffee House</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="container py-5 mt-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold" th:text="#{track.title}">Track Your Order</h1>
+                <p class="lead text-muted" th:text="#{track.subtitle}">Enter your tracking code to see the status of
+                    your order.</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form th:action="@{/tracking/search}" method="get" class="card p-4 shadow-sm border-0 rounded-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" th:text="#{track.code}">Tracking Code</label>
+                            <div class="input-group input-group-lg">
+                                <input type="text" name="code" class="form-control"
+                                    th:placeholder="#{track.placeholder}" required>
+                                <button class="btn btn-primary" type="submit" th:text="#{track.btn}">Track</button>
+                            </div>
+                        </div>
+                        <div th:if="${success}" class="alert alert-success rounded-3 mt-3" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger rounded-3 mt-3" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${order}" class="row justify-content-center mt-5">
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="card-header bg-primary text-white p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0 text-white-50" th:text="#{track.result.title}">Order Code</h5>
+                                    <h2 class="mb-0 fw-bold" th:text="${order.trackingCode}">ORD-1234</h2>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-white text-primary fs-5 px-3 py-2 rounded-pill"
+                                        th:text="${order.status}">PENDING</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Progress Bar -->
+                        <div class="card-body p-4 border-bottom bg-light">
+                            <div class="position-relative my-4">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                        th:style="'width: ' + (${order.status.name() == 'PENDING' ? '25' : (order.status.name() == 'CONFIRMED' ? '50' : (order.status.name() == 'SHIPPING' ? '75' : '100'))}) + '%'">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between position-absolute top-0 w-100 mt-n2"
+                                    style="margin-top: -10px;">
+                                    <div class="text-center"
+                                        th:classappend="${order.status.ordinal() >= 0 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Pending</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${order.status.ordinal() >= 1 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Confirmed</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${order.status.ordinal() >= 2 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Shipping</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${order.status.ordinal() >= 3 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted text-uppercase small fw-bold"
+                                        th:text="#{track.result.customer}">Customer</h6>
+                                    <p class="fs-5 fw-bold mb-0" th:text="${order.customerName}">Name</p>
+                                </div>
+                                <div class="col-sm-6 text-sm-end">
+                                    <h6 class="text-muted text-uppercase small fw-bold" th:text="#{track.result.date}">
+                                        Date</h6>
+                                    <p class="fs-5 mb-0"
+                                        th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <h5 class="fw-bold mb-3" th:text="#{track.result.items}">Order Items</h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th th:text="#{track.result.items}">Item</th>
+                                            <th class="text-center" th:text="#{track.result.qty}">Qty</th>
+                                            <th class="text-end" th:text="#{track.result.price}">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${order.orderDetails}">
+                                            <td>
+                                                <div class="fw-bold"
+                                                    th:text="${#locale.language == 'vi' && item.product != null && item.product.nameVi != null ? item.product.nameVi : item.productName}">
+                                                    Product</div>
+                                                <div class="small text-muted" th:text="${item.sizeSelected}">Size</div>
+                                            </td>
+                                            <td class="text-center" th:text="${item.quantity}">1</td>
+                                            <td class="text-end"
+                                                th:text="${#numbers.formatDecimal(item.priceAtPurchase * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                                100,000 đ</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="border-top">
+                                        <tr>
+                                            <td colspan="2" class="fw-bold fs-5" th:text="#{track.result.total}">Total
+                                            </td>
+                                            <td class="text-end fw-bold fs-5 text-primary"
+                                                th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                                Total</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer bg-white p-4 border-top-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                <a href="/info" class="btn btn-outline-dark rounded-pill px-4">
+                                    <i class="fas fa-headset me-2"></i> <span
+                                        th:text="#{track.result.support}">Support</span>
+                                </a>
+                                <a th:href="@{'/invoice/' + ${order.id}}" target="_blank"
+                                    class="btn btn-outline-primary rounded-pill px-4 ms-2">
+                                    <i class="fas fa-print me-2"></i> <span th:text="#{track.result.print}">Print
+                                        Receipt</span>
+                                </a>
+                            </div>
+                            <!-- Only show Cancel button if status is PENDING -->
+                            <div th:if="${order.status.name() == 'PENDING'}">
+                                <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal"
+                                    data-bs-target="#cancelModal">
+                                    <i class="fas fa-times me-2"></i> <span th:text="#{track.result.cancel}">Cancel
+                                        Order</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancel Modal -->
+            <!-- Modal must be positioned correctly in DOM, preferably direct child of container or body to avoid z-index/overflow issues -->
+            <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true" th:if="${order}">
+                <div class="modal-dialog">
+                    <div class="modal-content rounded-4 border-0 shadow">
+                        <div class="modal-header border-bottom-0">
+                            <h5 class="modal-title fw-bold text-danger">Cancel Order</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/tracking/cancel}" method="post">
+                            <div class="modal-body">
+                                <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
+                                <input type="hidden" name="orderId" th:value="${order.id}">
+                                <input type="hidden" name="trackingCode" th:value="${order.trackingCode}">
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label text-muted">Reason (Optional)</label>
+                                    <textarea class="form-control" name="reason" id="reason" rows="3"
+                                        placeholder="Let us know why..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top-0">
+                                <button type="button" class="btn btn-light rounded-pill px-4"
+                                    data-bs-dismiss="modal">Keep Order</button>
+                                <button type="submit" class="btn btn-danger rounded-pill px-4">Confirm Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Application Tracking Result -->
+            <div th:if="${jobApplication}" class="row justify-content-center mt-5">
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="card-header bg-success text-white p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0 text-white-50">Application Code</h5>
+                                    <h2 class="mb-0 fw-bold" th:text="${jobApplication.trackingCode}">CV-1234</h2>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-white text-success fs-5 px-3 py-2 rounded-pill"
+                                        th:text="${jobApplication.status}">NEW</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Application Status Progress Bar -->
+                        <div class="card-body p-4 border-bottom bg-light">
+                            <div class="position-relative my-4">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                        th:style="'width: ' + (${jobApplication.status.name() == 'NEW' ? '25' : (jobApplication.status.name() == 'REVIEWED' ? '50' : (jobApplication.status.name() == 'INTERVIEWING' ? '75' : '100'))}) + '%'">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between position-absolute top-0 w-100 mt-n2"
+                                    style="margin-top: -10px;">
+                                    <div class="text-center"
+                                        th:classappend="${jobApplication.status.ordinal() >= 0 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Submitted</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${jobApplication.status.ordinal() >= 1 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Reviewed</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${jobApplication.status.ordinal() >= 2 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Interview</div>
+                                    </div>
+                                    <div class="text-center"
+                                        th:classappend="${jobApplication.status.ordinal() >= 4 ? 'text-success' : 'text-muted'}">
+                                        <i class="fas fa-circle bg-white p-1"></i>
+                                        <div class="small fw-bold mt-1">Result</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${jobApplication.status.name() == 'REJECTED'}"
+                                class="alert alert-warning mt-4 mb-0 rounded-3">
+                                <i class="fas fa-info-circle me-2"></i> We appreciate your interest. Although we cannot
+                                offer you a position at this time, we will keep your resume on file.
+                            </div>
+                            <div th:if="${jobApplication.status.name() == 'HIRED'}"
+                                class="alert alert-success mt-4 mb-0 rounded-3">
+                                <i class="fas fa-check-circle me-2"></i> Congratulations! Welcome to the team. Please
+                                check your email for onboarding details.
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Applicant</h6>
+                                    <p class="fs-5 fw-bold mb-0" th:text="${jobApplication.fullName}">Name</p>
+                                    <p class="text-muted small" th:text="${jobApplication.email}">Email</p>
+                                </div>
+                                <div class="col-sm-6 text-sm-end">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Position</h6>
+                                    <p class="fs-5 mb-0 fw-bold text-primary" th:text="${jobApplication.position}">
+                                        Barista
+                                    </p>
+                                    <p class="text-muted small"
+                                        th:text="${#temporals.format(jobApplication.createdAt, 'dd-MM-yyyy')}">Date</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white p-4 border-top-0 d-flex justify-content-center">
+                            <a href="/careers" class="btn btn-outline-primary rounded-pill px-5">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Careers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</body>
+
+</html>

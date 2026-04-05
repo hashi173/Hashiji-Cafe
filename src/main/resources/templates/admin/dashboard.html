@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::div})}">
+
+<body>
+    <div>
+        <div class="row">
+            <!-- Orders -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-white bg-primary h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Orders</h6>
+                        <p class="card-text fs-4 fw-bold" th:text="${totalOrders}">0</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Pending -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-dark bg-warning h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Pending</h6>
+                        <p class="card-text fs-4 fw-bold" th:text="${pendingOrders}">0</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Revenue -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Revenue</h6>
+                        <p class="card-text fs-4 fw-bold"
+                            th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 ₫</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Expenses -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-white bg-danger h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Expenses</h6>
+                        <p class="card-text fs-4 fw-bold"
+                            th:text="${#numbers.formatDecimal(totalExpenses, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 ₫</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Payroll -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Est. Payroll</h6>
+                        <p class="card-text fs-4 fw-bold"
+                            th:text="${#numbers.formatDecimal(totalPayroll, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 ₫</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Net Profit -->
+            <div class="col-md-4 col-xl-2 mb-3">
+                <div class="card text-white h-100" th:classappend="${netProfit >= 0 ? 'bg-success' : 'bg-danger'}">
+                    <div class="card-body">
+                        <h6 class="card-title">Net Profit</h6>
+                        <p class="card-text fs-4 fw-bold"
+                            th:text="${#numbers.formatDecimal(netProfit, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 ₫</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row mt-4">
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-chart-line me-2"></i>Sales Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(revenueDates)}" class="text-center py-5 text-muted">
+                            <i class="fas fa-chart-area fa-3x mb-3 text-secondary"></i>
+                            <p>No revenue data available yet.</p>
+                        </div>
+                        <div class="chart-container" style="position: relative; height:300px; width:100%"
+                            th:unless="${#lists.isEmpty(revenueDates)}">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0 fw-bold text-success"><i class="fas fa-crown me-2"></i>Top Selling Items</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div th:if="${#lists.isEmpty(productNames)}" class="text-center py-4 text-muted">
+                                No sales this month yet.
+                            </div>
+                            <div th:each="pName, iter : ${productNames}"
+                                class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-light text-dark rounded-circle me-3 border"
+                                        style="width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;"
+                                        th:text="${iter.index + 1}">1</span>
+                                    <img th:src="${productImages[iter.index] != null ? productImages[iter.index] : '/images/no-image.png'}"
+                                        class="rounded-3 shadow-sm me-3"
+                                        style="width: 50px; height: 50px; object-fit: cover;" alt="Product">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold" th:text="${pName}">Product Name</h6>
+                                        <small class="text-muted">Top Seller</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success fs-6 rounded-pill px-3 py-2"
+                                    th:text="${productQuantities[iter.index]} + ' sold'">120 sold</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                /*<![CDATA[*/
+                const revenueDates = /*[[${revenueDates}]]*/[];
+                const revenueAmounts = /*[[${revenueAmounts}]]*/[];
+                /*]]>*/
+
+                console.log('Revenue Dates:', revenueDates);
+
+                if (revenueDates && revenueDates.length > 0) {
+                    const canvas = document.getElementById('revenueChart');
+                    if (canvas) {
+                        new Chart(canvas.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: revenueDates,
+                                datasets: [{
+                                    label: 'Monthly Revenue',
+                                    data: revenueAmounts,
+                                    borderColor: '#198754',
+                                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: '#fff',
+                                    pointBorderColor: '#198754',
+                                    pointBorderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: true, position: 'top' },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (context) {
+                                                let label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.parsed.y !== null) {
+                                                    label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function (value) {
+                                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                                if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
+                                                return value;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

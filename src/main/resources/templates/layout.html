@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:fragment="layout(content)" th:lang="${#locale.language}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashiji Café</title>
+    <!-- Google Fonts - Be Vietnam Pro for Vietnamese support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* Apply Be Vietnam Pro globally */
+        :root {
+            --font-primary: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .btn,
+        .nav-link,
+        .dropdown-item {
+            font-family: var(--font-primary) !important;
+        }
+
+        /* Specific override for Vietnamese locale if needed, but global is safer for mixed content */
+        html[lang="vi"] body,
+        body.lang-vi {
+            font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        }
+
+        /* Active nav link highlight */
+        .nav-link.active-section {
+            color: var(--bs-primary) !important;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid px-5">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-cat fa-lg me-2 text-accent"></i>
+                Hashiji Café
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto gap-3 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/#hero" th:text="#{nav.home}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link text-nowrap" href="/#about" th:text="#{nav.about}">About
+                            Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/#menu" th:text="#{nav.menu}">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/#careers" th:text="#{nav.careers}">Careers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/tracking" th:text="#{nav.track}">Track</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/#info" th:text="#{nav.info}">Info</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center justify-content-center"
+                            href="/cart">
+                            <i class="fas fa-shopping-basket me-2"></i> <span th:text="#{nav.cart}">Cart</span>
+                            <span th:if="${session.cartItemCount > 0}" class="badge bg-white text-primary ms-1"
+                                th:text="${session.cartItemCount}">0</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="ms-lg-3 d-flex align-items-center">
+                    <!-- Language Switcher -->
+                    <div class="dropdown me-2">
+                        <a href="#" class="nav-link dropdown-toggle p-2" data-bs-toggle="dropdown"
+                            title="Change Language">
+                            <i class="fas fa-globe fa-lg"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item py-2" href="?lang=en"><i class="me-2">🇬🇧</i> English</a></li>
+                            <li><a class="dropdown-item py-2" href="?lang=vi"><i class="me-2">🇻🇳</i> Tiếng Việt</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div sec:authorize="!isAuthenticated()">
+                        <a href="/login" class="btn btn-success rounded-pill px-4 shadow-sm text-white fw-bold"
+                            th:text="#{nav.login}">Login</a>
+                    </div>
+
+                    <div sec:authorize="isAuthenticated()" class="dropdown ms-2">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                            data-bs-toggle="dropdown">
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white"
+                                style="width: 40px; height: 40px;">
+                                <span sec:authentication="name" style="font-size: 1.2rem;">U</span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li sec:authorize="hasAnyRole('ADMIN', 'STAFF')">
+                                <a class="dropdown-item py-2" href="/admin/dashboard">
+                                    <i class="fas fa-cog me-2 text-muted"></i><span th:text="#{nav.admin}">Admin
+                                        Panel</span>
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item py-2" href="/tracking"><i
+                                        class="fas fa-box me-2 text-muted"></i><span th:text="#{nav.myorders}">My
+                                        Orders</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item py-2 text-danger" href="/logout"><i
+                                        class="fas fa-sign-out-alt me-2"></i><span
+                                        th:text="#{nav.logout}">Logout</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Injection -->
+    <main class="flex-grow-1" style="margin-top: 80px;">
+        <div th:replace="${content}"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-2 pb-2 mt-3">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+
+                <!-- About Column -->
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-accent" th:text="#{footer.about.title}">Hashiji
+                        Café</h5>
+                    <p th:text="#{footer.about.desc}">
+                        A surreal escape where coffee meets weightlessness.
+                        Experience the finest blends in an atmosphere that defies gravity.
+                    </p>
+                </div>
+
+                <!-- Quick Links Column -->
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-accent" th:text="#{footer.links.title}">Quick
+                        Links</h5>
+                    <p><a href="/#hero" class="text-white text-decoration-none" th:text="#{nav.home}">Home</a></p>
+                    <p><a href="/#about" class="text-white text-decoration-none" th:text="#{nav.about}">About Us</a></p>
+                    <p><a href="/#menu" class="text-white text-decoration-none" th:text="#{nav.menu}">Menu</a></p>
+                    <p><a href="/tracking" class="text-white text-decoration-none" th:text="#{nav.track}">Track
+                            Order</a></p>
+                </div>
+
+                <!-- Contact Column -->
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-accent" th:text="#{footer.contact.title}">
+                        Contact</h5>
+                    <p><i class="fas fa-home mr-3"></i> <span th:text="#{footer.contact.address}">123 Sky High Blvd,
+                            Cloud City</span></p>
+                    <p><i class="fas fa-envelope mr-3"></i> info@hashiji.coffee</p>
+                    <p><i class="fas fa-phone mr-3"></i> +01 234 567 88</p>
+                </div>
+
+            </div>
+
+            <hr class="mb-4">
+
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p th:text="#{footer.rights}">© 2026 Hashiji Café. All Rights Reserved.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <div class="text-center text-md-end">
+                        <ul class="list-unstyled list-inline">
+                            <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i
+                                        class="fab fa-facebook"></i></a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i
+                                        class="fab fa-twitter"></i></a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i
+                                        class="fab fa-google-plus"></i></a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i
+                                        class="fab fa-linkedin-in"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Background Music Player -->
+    <div id="youtube-audio-player" style="position:fixed; width:200px; height:200px; bottom:0; left:-5000px; pointer-events:none; z-index:-9999;"></div>
+    <button id="music-toggle-btn"
+        class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+        style="position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; z-index: 9999; border: 2px solid white; transition: all 0.3s ease;">
+        <i class="fas fa-play" id="music-icon" style="font-size: 1.5rem;"></i>
+    </button>
+
+    <script>
+        // YouTube Player API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        var isPlaying = false;
+        var musicState = {
+            currentTime: 1408, // Start at 1408s
+            isPlaying: false
+        };
+
+        try {
+            if (sessionStorage.getItem('musicState')) {
+                musicState = JSON.parse(sessionStorage.getItem('musicState'));
+                if (isNaN(musicState.currentTime)) musicState.currentTime = 1408;
+            }
+        } catch (e) {
+            sessionStorage.removeItem('musicState');
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-audio-player', {
+                height: '10',
+                width: '10',
+                videoId: 'FjHGZj2IjBk',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': 'FjHGZj2IjBk',
+                    'start': Math.floor(musicState.currentTime)
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            const btn = document.getElementById('music-toggle-btn');
+            const icon = document.getElementById('music-icon');
+
+            // Resume if it was playing, try-catch for potential autoplay block
+            if (musicState.isPlaying) {
+                try {
+                    player.playVideo();
+                    updateUI(true);
+                } catch (e) {
+                    console.log("Autoplay blocked or player error", e);
+                    updateUI(false);
+                }
+            }
+
+            btn.addEventListener('click', function () {
+                if (isPlaying) {
+                    if (player && player.pauseVideo) {
+                        player.pauseVideo();
+                        updateUI(false);
+                    }
+                } else {
+                    if (player && player.playVideo) {
+                        player.playVideo();
+                        // Try unmuting in case it was muted by browser policy
+                        if(player.unMute) player.unMute();
+                        updateUI(true);
+                    }
+                }
+            });
+        }
+
+        function updateUI(playing) {
+            const btn = document.getElementById('music-toggle-btn');
+            const icon = document.getElementById('music-icon');
+            isPlaying = playing;
+            musicState.isPlaying = playing;
+
+            if (playing) {
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+                btn.classList.add('music-playing');
+            } else {
+                icon.classList.remove('fa-pause');
+                icon.classList.add('fa-play');
+                btn.classList.remove('music-playing');
+            }
+            saveState();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                isPlaying = true;
+            } else if (event.data == YT.PlayerState.PAUSED) {
+                isPlaying = false;
+            }
+            saveState();
+        }
+
+        function saveState() {
+            if (player && player.getCurrentTime) {
+                musicState.currentTime = player.getCurrentTime();
+            }
+            musicState.isPlaying = isPlaying;
+            sessionStorage.setItem('musicState', JSON.stringify(musicState));
+        }
+
+        // Save state before unloading
+        window.addEventListener('beforeunload', function () {
+            saveState();
+        });
+
+        // Save periodically in case of crash/closure
+        setInterval(saveState, 5000);
+    </script>
+
+    <style>
+        .music-playing {
+            animation: pulse-glow 2s infinite;
+            background-color: var(--accent) !important;
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 215, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script>
+        // Intersection Observer for active nav link highlighting
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            if (sections.length === 0) return;
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active-section');
+                            if (link.getAttribute('href') === '/#' + id) {
+                                link.classList.add('active-section');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-20% 0px -60% 0px' });
+
+            sections.forEach(section => observer.observe(section));
+        });
+    </script>
+    <!-- AI Chatbot Widget -->
+    <div class="chatbot-widget">
+        <button class="chatbot-btn" id="chatbot-toggle">
+            <i class="fas fa-robot"></i>
+        </button>
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <span><i class="fas fa-robot mr-2"></i> Hashiji AI</span>
+                <button class="chatbot-close" id="chatbot-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chatbot-body" id="chatbot-body">
+                <div class="chat-msg chat-bot">
+                    Hello! I am Hashiji AI. Would you like me to recommend some drinks for you?
+                </div>
+            </div>
+            <div class="chatbot-footer flex-column">
+                <div class="d-flex w-100 mb-2">
+                    <input type="text" id="chat-input" class="form-control rounded-pill border" placeholder="Ví dụ: nóng, béo, lạnh..." style="font-size: 0.85rem;">
+                    <button id="chat-send" class="btn btn-primary rounded-circle ms-2 px-3"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <button class="chat-suggest-btn w-100" id="btn-suggest-me">✨ Auto Suggest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('chatbot-toggle');
+            const closeBtn = document.getElementById('chatbot-close');
+            const chatWindow = document.getElementById('chatbot-window');
+            const suggestBtn = document.getElementById('btn-suggest-me');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send');
+            const chatBody = document.getElementById('chatbot-body');
+
+            // Detect current product if on detail page
+            const productIdElement = document.querySelector('input[name="productId"]');
+            const currentProductId = productIdElement ? productIdElement.value : null;
+
+            toggleBtn.addEventListener('click', () => {
+                chatWindow.classList.toggle('active');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                chatWindow.classList.remove('active');
+            });
+
+            function fetchRecommendations(query = null) {
+                // Call API
+                let url = '/api/ai/recommend';
+                const params = new URLSearchParams();
+                if (currentProductId) params.append('productId', currentProductId);
+                if (query) params.append('query', query);
+                
+                if(params.toString().length > 0) {
+                    url += '?' + params.toString();
+                }
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        const strategy = data.strategy;
+                        const items = data.recommendations;
+                        
+                        setTimeout(() => {
+                            let responseHtml = `Based on <b>${strategy}</b>, here are some recommendations:<br>`;
+                            if (query) {
+                                responseHtml = `Here are some items matching "<b>${query}</b>":<br>`;
+                            }
+                            appendMessage(responseHtml, 'bot', false);
+
+                            items.forEach(item => {
+                                const cardHtml = `
+                                    <a href="/product/${item.id}" class="chat-product-card text-decoration-none text-dark">
+                                        <img src="${item.image}" class="chat-product-img" onerror="this.src='https://via.placeholder.com/150'">
+                                        <div class="chat-product-info">
+                                            <h6 class="chat-product-name">${item.name}</h6>
+                                            <p class="chat-product-price">${item.price.toLocaleString()} đ</p>
+                                        </div>
+                                    </a>
+                                `;
+                                appendMessage(cardHtml, 'bot', true);
+                            });
+
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                            if (!query) {
+                                suggestBtn.disabled = false;
+                                suggestBtn.innerHTML = '✨ Suggest More';
+                            }
+                        }, 500); // UI delay for feel
+                    })
+                    .catch(e => {
+                        appendMessage('Sorry, I am having trouble connecting to my neural network right now.', 'bot');
+                        if (!query) {
+                            suggestBtn.disabled = false;
+                            suggestBtn.innerHTML = '✨ Suggest Me Products';
+                        }
+                    })
+                    .finally(() => {
+                        chatInput.value = '';
+                    });
+            }
+
+            suggestBtn.addEventListener('click', () => {
+                appendMessage('Suggest me some items!', 'user');
+                suggestBtn.disabled = true;
+                suggestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+                fetchRecommendations();
+            });
+
+            chatSendBtn.addEventListener('click', () => {
+                const query = chatInput.value.trim();
+                if(!query) return;
+                appendMessage(query, 'user');
+                chatSendBtn.disabled = true;
+                fetchRecommendations(query);
+                setTimeout(() => chatSendBtn.disabled = false, 1000);
+            });
+
+            chatInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    chatSendBtn.click();
+                }
+            });
+
+            function appendMessage(textOrHtml, sender, isRaw = false) {
+                const div = document.createElement('div');
+                div.className = 'chat-msg chat-' + sender;
+                if(isRaw) {
+                    div.style.background = 'transparent';
+                    div.style.padding = '0';
+                    div.style.boxShadow = 'none';
+                    div.innerHTML = textOrHtml;
+                } else {
+                    div.innerHTML = textOrHtml;
+                }
+                chatBody.appendChild(div);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1156 @@
+/* Hashiji Café - Surreal Anti-gravity Watercolor */
+@import url('https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700;900&family=Lato:wght@300;400;700&family=Yuji+Syuku&display=swap');
+
+:root {
+    /* Palette: Cobalt Blue & Wet Ink */
+    --primary: #0047AB;
+    /* Cobalt Blue */
+    --secondary: #8ECAE6;
+    /* Water Blue */
+    --text-dark: #333333;
+    --text-light: #F8F9FA;
+    --accent: #FFD700;
+    /* Gold Leaf */
+    --void: #090A0F;
+
+    /* Font Sizes - Scaled Down for 100% Zoom */
+    --fs-base: 0.8rem;
+    --fs-h1: 2rem;
+    --fs-h2: 1.5rem;
+    --fs-h3: 1.25rem;
+    --fs-h4: 1.1rem;
+    /* For Product Titles */
+
+    /* Radii */
+    --radius-float: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+html {
+    font-size: 12px; /* Overall UI scale reduced */
+    /* Compact for SPA */
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: #FAFAFA;
+    color: var(--text-dark);
+    line-height: 1.7;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Zen Old Mincho', serif;
+    font-weight: 600;
+    /* Bolder headers */
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: var(--fs-h1);
+    line-height: 1.1;
+}
+
+h2 {
+    font-size: var(--fs-h2);
+}
+
+h3 {
+    font-size: var(--fs-h3);
+}
+
+/* Reusable Paper Texture */
+.bg-texture-paper {
+    background-color: #F8F9FA;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(0, 71, 171, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 71, 171, 0.08) 0%, transparent 50%),
+        url("https://www.transparenttextures.com/patterns/rice-paper-2.png");
+}
+
+/* --- Immersive Menu Design: Blue Ink Wash (Thủy Mặc) Style --- */
+
+.menu-section {
+    position: relative;
+    padding: 4rem 0 3rem 0;
+    /* Compact SPA section */
+    background-color: #F8F9FA;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(0, 71, 171, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 71, 171, 0.08) 0%, transparent 50%),
+        url("https://www.transparenttextures.com/patterns/rice-paper-2.png");
+    overflow: hidden;
+}
+
+/* Ink Wash overlay - subtle */
+.menu-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Abstract Ink Flow using Gradients */
+    background:
+        linear-gradient(180deg, white 0%, transparent 20%, transparent 80%, white 100%),
+        radial-gradient(ellipse at center, transparent 0%, rgba(230, 243, 248, 0.5) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.product-wave-container {
+    perspective: 1000px;
+    margin-bottom: 5rem;
+}
+
+.wave-card {
+    position: relative;
+    border: none;
+    background: transparent;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 1;
+}
+
+.wave-card:hover {
+    z-index: 20;
+}
+
+/* Image Lifting Effect - Soft Ink Shadow */
+.wave-img-wrapper {
+    position: relative;
+    width: 120%;
+    margin-left: -10%;
+    height: 160px;
+    /* Compact height for SPA */
+    z-index: 5;
+    filter: drop-shadow(0 15px 25px rgba(0, 71, 171, 0.12));
+    transition: all 0.6s ease;
+}
+
+.wave-card:hover .wave-img-wrapper {
+    /* Deeper Ink Shadow on Hover */
+    filter: drop-shadow(0 40px 50px rgba(0, 71, 171, 0.25));
+}
+
+.wave-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Wave Base Removed (No more crashing waves) */
+.wave-base {
+    filter: contrast(1.2);
+}
+
+.wave-info {
+    position: relative;
+    z-index: 10;
+    padding: 0.8rem;
+    margin-top: -20px;
+    text-align: center;
+}
+
+.product-title {
+    font-family: 'Zen Old Mincho', serif;
+    font-size: 1.8rem;
+    /* Scaled down */
+    font-weight: 900;
+    /* Bold */
+    color: #002147;
+    /* Prussian Blue */
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    background: rgba(255, 255, 255, 0.8);
+    /* Readability backing */
+    backdrop-filter: blur(4px);
+    display: inline-block;
+    padding: 0 10px;
+}
+
+.product-price {
+    font-family: 'Zen Old Mincho', serif;
+    font-size: 1.5rem;
+    color: #B22222;
+    /* Traditional Japn. Red Accent */
+    font-weight: bold;
+    display: block;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 0px #fff;
+}
+
+/* Immersive Button */
+.btn-immersive {
+    background: #0047AB;
+    /* Fixed Cobalt Blue */
+    color: white !important;
+    /* Fixed Text Color */
+    border: none;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    border-radius: 2px;
+    /* Woodblock cut style */
+    transition: all 0.3s ease;
+    box-shadow: 5px 5px 0px #000;
+    /* Graphic Shadow */
+}
+
+.btn-immersive:hover {
+    background: #002147;
+}
+
+/* --- End Immersive Menu --- */
+
+/* Navbar & Brand */
+.navbar-brand {
+    font-family: 'Yuji Syuku', serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: -0.03em;
+    color: var(--primary);
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    color: var(--primary);
+    font-weight: 500;
+    /* Slightly bolder for readability */
+}
+
+h1 {
+    font-size: 4rem;
+    letter-spacing: -2px;
+}
+
+h2 {
+    font-size: 2.8rem;
+}
+
+h3 {
+    font-size: 2rem;
+}
+
+p {
+    font-weight: 400;
+}
+
+/* Navbar - Ethereal */
+.navbar {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0, 71, 171, 0.05);
+}
+
+.nav-link {
+    font-size: 1.15rem;
+    /* Increased */
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-main) !important;
+    font-weight: 400;
+}
+
+/* Anti-gravity Animations */
+@keyframes float-slow {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-10px) rotate(1deg);
+    }
+}
+
+@keyframes float-medium {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(-1deg);
+    }
+}
+
+@keyframes float-fast {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(2deg);
+    }
+}
+
+.float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+}
+
+.float-medium {
+    animation: float-medium 6s ease-in-out infinite;
+}
+
+.float-fast {
+    animation: float-fast 4s ease-in-out infinite;
+}
+
+/* Water Droplet Images */
+.img-droplet {
+    border-radius: var(--radius-float);
+    box-shadow: 20px 20px 60px rgba(0, 71, 171, 0.1),
+        -20px -20px 60px rgba(255, 255, 255, 0.8);
+    transition: all 0.5s ease;
+}
+
+.img-droplet:hover {
+    border-radius: 50%;
+    transform: scale(1.02);
+}
+
+/* Surreal Cards */
+.rpg-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 0.8rem; /* Reduced padding */
+    box-shadow: 5px 5px 0px #000;
+    transition: 0.3s;
+    max-width: 250px; /* Width reduced */
+    margin: 0 auto;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 15px 40px rgba(0, 71, 171, 0.1);
+}
+
+/* Buttons - Zero G */
+.btn-primary {
+    background: #0047AB;
+    /* Cobalt Blue Fixed */
+    color: #FFFFFF !important;
+    /* Force White Text */
+    border: none;
+    border-radius: 100px;
+    padding: 10px 24px;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    clip-path: circle(0% at 50% 50%);
+    transition: 0.4s;
+}
+
+.btn-primary:hover::after {
+    clip-path: circle(100% at 50% 50%);
+}
+
+.btn-outline-dark {
+    border-color: var(--primary);
+    color: var(--primary);
+    border-radius: 100px;
+}
+
+.btn-outline-dark:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Footer */
+footer {
+    background-color: #212529;
+    margin-top: 0;
+    /* No gap in SPA */
+}
+
+/* Floating Animation */
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(2deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+
+
+/* Watercolor Spot Decoration */
+.watercolor-spot {
+    position: absolute;
+    z-index: -1;
+    filter: blur(40px);
+    opacity: 0.4;
+    border-radius: 50%;
+}
+
+.bg-spot-blue {
+    background: var(--secondary);
+    width: 200px;
+    height: 200px;
+}
+
+.bg-spot-gold {
+    background: var(--accent);
+    width: 140px;
+    height: 140px;
+}
+
+/* --- Gamified / Surreal RPG Styles --- */
+
+/* Timeline / Cloud Path */
+.cloud-path-container {
+    position: relative;
+    padding: 4rem 0;
+}
+
+.cloud-path-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: repeating-linear-gradient(to bottom, var(--secondary) 0, var(--secondary) 10px, transparent 10px, transparent 20px);
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+/* Floating Islands (Milestones) */
+.floating-island {
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 40px;
+    box-shadow: 0 15px 35px rgba(0, 71, 171, 0.1);
+    transition: transform 0.5s ease;
+    max-width: 300px; /* Width reduced */
+    margin: 0 auto;
+}
+
+
+
+.island-marker {
+    width: 16px;
+    height: 16px;
+    background: var(--primary);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--secondary);
+    position: absolute;
+    top: 50%;
+
+}
+
+/* Left/Right positioning for timeline */
+.island-left {
+    margin-right: 30px;
+}
+
+.island-right {
+    margin-left: 30px;
+    text-align: right;
+}
+
+.island-left+.island-marker {
+    right: -40px;
+}
+
+.island-right+.island-marker {
+    left: -40px;
+}
+
+
+/* RPG Item / Stat Cards */
+.rpg-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+
+
+.rpg-stat-bar {
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.rpg-stat-fill {
+    height: 100%;
+    background: var(--primary);
+    width: 0%;
+    /* Animate width inline */
+    transition: width 1s ease-out;
+}
+
+/* Character Card (Cats) */
+.char-card {
+    background: white;
+    padding: 1rem; /* Reduced padding */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+    width: 15rem; /* Narrower cards */
+    margin: 0 auto;
+}
+
+.char-card img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    border: 3px solid var(--accent);
+}
+
+/* --- Galaxy / Deep Space Careers Theme --- */
+
+.bg-galaxy {
+    /* Updated to Deep Cobalt / Blue Void to match brand */
+    background: radial-gradient(circle at center bottom, #002147 0%, #000b1a 60%, #000000 100%);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    box-shadow: inset 0 0 100px rgba(0, 71, 171, 0.3);
+}
+
+/* Stars Background */
+.stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 0;
+}
+
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--duration) ease-in-out infinite;
+    opacity: var(--opacity);
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: var(--opacity);
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+        box-shadow: 0 0 10px white;
+    }
+}
+
+/* --- Watercolor Galaxy / Starry Night Theme --- */
+.bg-watercolor-stars {
+    background-color: #050A18;
+    /* Deep Midnight Base */
+    background-image:
+        /* Stars Layer */
+        radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 3px),
+        radial-gradient(white, rgba(255, 255, 255, .15) 1px, transparent 2px),
+        radial-gradient(white, rgba(255, 255, 255, .1) 2px, transparent 3px),
+        /* Watercolor Wash / Cloud Layer */
+        radial-gradient(circle at 0% 0%, rgba(0, 71, 171, 0.4), transparent 50%),
+        radial-gradient(circle at 100% 0%, rgba(142, 202, 230, 0.3), transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(0, 71, 171, 0.4), transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(142, 202, 230, 0.3), transparent 50%),
+        /* Wet Spots / Blotches Layer */
+        radial-gradient(ellipse at 50% 50%, rgba(0, 33, 71, 0.8) 0%, transparent 60%);
+    background-size: 550px 550px, 350px 350px, 250px 250px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 40px 60px, 130px 270px, 0 0, 0 0, 0 0, 0 0, 0 0;
+    position: relative;
+    color: #fff;
+    /* Default text white */
+    min-height: 100vh;
+}
+
+/* Ensure background covers nicely */
+.bg-watercolor-stars::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Subtle noise/texture overlay for "paper" feel */
+    background: url("https://www.transparenttextures.com/patterns/watercolor.png");
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Update text colors inside this container to pop */
+.bg-watercolor-stars h1,
+.bg-watercolor-stars h2,
+.bg-watercolor-stars .lead {
+    color: #fff !important;
+    text-shadow: 0 2px 10px rgba(0, 71, 171, 0.5);
+}
+
+/* Glowing Job Orb */
+.job-star-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    /* Orb shape */
+    width: 250px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    transition: all 0.5s ease;
+    box-shadow: 0 0 20px rgba(0, 71, 171, 0.2);
+    position: relative;
+    margin: 0 auto;
+}
+
+.job-star-card:hover {
+    transform: scale(1.1);
+    background: rgba(0, 71, 171, 0.2);
+    border-color: var(--secondary);
+    box-shadow: 0 0 50px rgba(142, 202, 230, 0.4);
+}
+
+.job-star-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, transparent, var(--secondary), transparent);
+    z-index: -1;
+    animation: rotate-orbit 4s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.job-star-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes rotate-orbit {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Astronaut Floating */
+.astronaut-float {
+    animation: float-space 10s ease-in-out infinite;
+}
+
+@keyframes float-space {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-15px) rotate(5deg);
+    }
+}
+
+/* ... existing code ... */
+.constellation-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    height: 1px;
+    transform-origin: left center;
+}
+
+/* --- Static Text Lift Effect (No Animation) --- */
+/* Improves contrast against background */
+/* --- Static Text Lift Effect (No Animation) --- */
+/* Improves contrast against background - Strengthened */
+.text-lift {
+    text-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.12),
+        0 12px 24px rgba(0, 71, 171, 0.2),
+        /* Deeper Blue */
+        0 16px 32px rgba(0, 71, 171, 0.15);
+    transform: translateY(-2px);
+}
+
+.text-lift-white {
+    text-shadow:
+        0 4px 10px rgba(255, 255, 255, 0.9),
+        0 8px 20px rgba(255, 255, 255, 0.6),
+        0 12px 30px rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* --- About Us: Interactive Beans --- */
+.bean-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    /* Let clicks pass through grid, but enable for children */
+    z-index: 5;
+}
+
+.scattered-bean {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.2));
+}
+
+.scattered-bean:hover {
+    transform: scale(1.2) rotate(15deg);
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+}
+
+.click-arrow {
+    position: absolute;
+    color: var(--primary);
+    font-family: 'Indie Flower', cursive;
+    /* Handwritten style if available, or fallback */
+    font-weight: bold;
+    font-size: 1.5rem;
+    pointer-events: none;
+    animation: bounceArrow 2s infinite;
+    z-index: 10;
+}
+
+@keyframes bounceArrow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Bean Modal/Popover */
+.bean-popover {
+    display: none;
+    position: absolute;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    width: 150px;
+    z-index: 100;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transform: translate(-50%, -120%);
+    /* Center above bean */
+    text-align: center;
+}
+
+.bean-popover.active {
+    display: block;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -120%) scale(1);
+    }
+}
+
+/* AI Chatbot */
+.chatbot-widget {
+    position: fixed;
+    bottom: 30px; /* Aligned with the music button */
+    right: 30px;
+    z-index: 10000;
+}
+
+.chatbot-btn {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-btn:hover {
+    transform: scale(1.1);
+}
+
+.chatbot-btn::before {
+    display: none;
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    max-height: 550px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: bottom right;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.chatbot-window.active {
+    display: flex;
+    animation: chatOpen 0.3s forwards;
+}
+
+@keyframes chatOpen {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.chatbot-header {
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-close {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.chatbot-body {
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8f9fa;
+}
+
+.chat-msg {
+    max-width: 85%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.chat-bot {
+    background: white;
+    color: var(--secondary);
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.chat-user {
+    background: var(--accent);
+    color: var(--primary);
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+}
+
+.chat-product-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.chat-product-card:hover {
+    transform: translateX(5px);
+    border-color: var(--accent);
+}
+
+.chat-product-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.chat-product-info {
+    flex: 1;
+}
+
+.chat-product-name {
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin: 0 0 3px 0;
+}
+
+.chat-product-price {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.chatbot-footer {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-suggest-btn {
+    flex: 1;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+.chat-suggest-btn:hover {
+    background: var(--accent);
+    color: var(--primary);
+}
+
+/* --- Added Carousel & Chat UI Fixes --- */
+.dots-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 25px;
+    padding-bottom: 20px;
+}
+.dot {
+    width: 12px;
+    height: 12px;
+    background: #CCC;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+.dot.active {
+    background: var(--primary);
+    transform: scale(1.3);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+.d-none-slide {
+    display: none !important;
+}
+
+/* Chat Product Image Fix */
+.chat-product-img {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: cover !important;
+    border-radius: 8px;
+    margin-right: 12px;
+    display: block !important;
+    background: #f0f0f0;
+}
+
+.chat-product-card {
+    display: flex !important;
+    align-items: center;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.chat-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+/* --- Hero Section Responsive Fix --- */
+.hero-img-main {
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+}
+
+.hero-img-sub {
+    top: 230px;
+    left: 50%;
+    transform: translateX(-150px);
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+}
+
+@media (min-width: 992px) {
+    .hero-img-main {
+        top: -80px; /* Moved down from -150px */
+        right: 0;
+        left: auto;
+        transform: none;
+        width: 450px;
+        height: 450px;
+    }
+    .hero-img-sub {
+        top: 15vh; /* Moved down from 5vh */
+        left: 50px;
+        transform: none;
+        width: 200px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    #hero {
+        min-height: auto !important;
+        padding-top: 4rem;
+        padding-bottom: 2rem;
+    }
+    .hero-img-main {
+        top: 20px;
+        width: 250px;
+        height: 250px;
+    }
+    .hero-img-sub {
+        width: 100px;
+        height: 100px;
+        top: 200px;
+    }
+}
+
+/* Carousel Navigation Buttons */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    color: var(--primary);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 71, 171, 0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.carousel-nav-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav-prev { left: 10px; }
+.carousel-nav-next { right: 10px; }
+
+/* Font Scaling Utility */
+.fs-1-5x {
+    font-size: 1.5rem !important;
+}
+
+.h3.fs-1-5x, .h4.fs-1-5x, .h5.fs-1-5x {
+    font-size: 1.8rem !important;
+}
+
+.badge.fs-1-5x {
+    font-size: 1.1rem !important;
+    padding: 8px 16px !important;
+}
+
+.small.fs-1-5x {
+    font-size: 1.2rem !important;
+}
+
+.char-role.fs-1-5x {
+    font-size: 1.1rem !important;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Recruitment Management</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Recruitment Management</h2>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-3">
+                <form action="/admin/recruitment" method="get" class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label fw-bold">Search Applications:</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="search" class="form-control" placeholder="Name, Email, Phone..."
+                            th:value="${search}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        <a href="/admin/recruitment" class="btn btn-outline-secondary" title="Clear"><i
+                                class="fas fa-times"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        <div class="card shadow border-0 mb-5">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-users me-2"></i>Applications</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Position</th>
+                                <th>Contact</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="app : ${applications}">
+                                <td>
+                                    <div class="fw-bold" th:text="${app.fullName}">Name</div>
+                                    <div class="small">
+                                        <a th:if="${app.cvUrl}" th:href="${app.cvUrl}" target="_blank"
+                                            class="text-decoration-none">
+                                            <i class="fas fa-file-pdf me-1"></i> View CV
+                                        </a>
+                                        <span th:unless="${app.cvUrl}" class="text-muted">No CV</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-dark border"
+                                        th:text="${app.position}">Position</span></td>
+                                <td>
+                                    <div th:text="${app.email}">Email</div>
+                                    <div class="small text-muted" th:text="${app.phone}">Phone</div>
+                                </td>
+                                <td th:text="${#temporals.format(app.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${app.status.name() == 'NEW' ? 'bg-primary' : 
+                                                           (app.status.name() == 'HIRED' ? 'bg-success' : 
+                                                           (app.status.name() == 'REJECTED' ? 'bg-danger' : 
+                                                           (app.status.name() == 'REVIEWED' ? 'bg-info text-dark' : 'bg-secondary')))}"
+                                        th:text="${app.status}">NEW</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <!-- Actions based on Status -->
+                                        <form th:if="${app.status.name() == 'NEW'}"
+                                            th:action="@{'/admin/recruitment/' + ${app.id} + '/status'}" method="post">
+                                            <input type="hidden" name="status" value="REVIEWED" />
+                                            <button type="submit" class="btn btn-sm btn-outline-info"
+                                                title="Mark Reviewed"><i class="fas fa-eye"></i></button>
+                                        </form>
+
+                                        <form th:if="${app.status.name() != 'HIRED' && app.status.name() != 'REJECTED'}"
+                                            th:action="@{'/admin/recruitment/' + ${app.id} + '/status'}" method="post"
+                                            onsubmit="return confirm('Confirm HIRE?');">
+                                            <input type="hidden" name="status" value="HIRED" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Hire"><i
+                                                    class="fas fa-user-check"></i></button>
+                                        </form>
+
+                                        <form th:if="${app.status.name() != 'REJECTED' && app.status.name() != 'HIRED'}"
+                                            th:action="@{'/admin/recruitment/' + ${app.id} + '/status'}" method="post"
+                                            onsubmit="return confirm('Reject this applicant?');">
+                                            <input type="hidden" name="status" value="REJECTED" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="Reject"><i class="fas fa-times"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(applications)}">
+                                <td colspan="6" class="text-center py-4 text-muted">No applications found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div
+            th:replace="~{admin/fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/admin/recruitment', ${search}, 'page')}">
+        </div>
+    </div>
+</body>
+
+</html>

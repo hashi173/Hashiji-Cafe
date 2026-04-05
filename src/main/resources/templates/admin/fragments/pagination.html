@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <nav th:fragment="pagination(page, totalPages, baseUrl, search, paramName)" th:if="${totalPages > 1}"
+        aria-label="Page navigation" class="mt-4">
+        <!-- paramName default is 'page' -->
+        <ul class="pagination justify-content-center flex-wrap"
+            th:with="pName=${paramName != null ? paramName : 'page'}">
+            <!-- First Button -->
+            <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(__${pName}__=0, search=${search})}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Previous Button -->
+            <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(__${pName}__=${page - 1}, search=${search})}"
+                    aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Page Numbers Sliding Window -->
+            <li class="page-item disabled" th:if="${page - 2 > 0}">
+                <span class="page-link">...</span>
+            </li>
+
+            <th:block
+                th:each="i : ${#numbers.sequence(page > 2 ? page - 2 : 0, page + 2 < totalPages - 1 ? page + 2 : totalPages - 1)}">
+                <li class="page-item" th:classappend="${i == page} ? 'active'">
+                    <a class="page-link" th:href="@{${baseUrl}(__${pName}__=${i}, search=${search})}"
+                        th:text="${i + 1}">1</a>
+                </li>
+            </th:block>
+
+            <li class="page-item disabled" th:if="${page + 2 < totalPages - 1}">
+                <span class="page-link">...</span>
+            </li>
+
+            <!-- Next Button -->
+            <li class="page-item" th:classappend="${page >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(__${pName}__=${page + 1}, search=${search})}"
+                    aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+
+            <!-- Last Button -->
+            <li class="page-item" th:classappend="${page >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(__${pName}__=${totalPages - 1}, search=${search})}"
+                    aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+        <p class="text-center text-muted small mt-2">
+            Page <span th:text="${page + 1}">1</span> of <span th:text="${totalPages}">1</span>
+        </p>
+    </nav>
+</body>
+
+</html>

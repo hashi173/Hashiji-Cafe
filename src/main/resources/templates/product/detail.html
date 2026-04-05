@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+
+<head>
+    <title th:text="${product.name} + ' - The Coffee House'">Product Detail</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="container py-5 mt-5">
+            <div class="row g-5">
+                <!-- Product Image -->
+                <div class="col-lg-4 d-flex justify-content-center align-items-start">
+                    <div class="rounded-4 overflow-hidden shadow-lg position-relative" style="height: 180px; width: 180px;">
+                        <img th:src="${product.image != null ? product.image : 'https://via.placeholder.com/600x600?text=No+Image'}"
+                            class="w-100 h-100" style="object-fit: cover;" th:alt="${product.name}">
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3"
+                        th:text="${#locale.language == 'vi' && product.nameVi != null ? product.nameVi : product.name}">
+                        Product Name</h1>
+                    <p class="lead text-muted mb-4 fs-4"
+                        th:text="${#locale.language == 'vi' && product.descriptionVi != null ? product.descriptionVi : product.description}">
+                        Product Description</p>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <span class="h1 fw-bold text-primary mb-0 me-3" id="displayPrice">0 đ</span>
+                        <input type="hidden" id="basePrice" value="0">
+                        <input type="hidden" id="finalPrice" value="0">
+                    </div>
+
+                    <form th:action="@{/cart/add}" method="post" id="addToCartForm">
+                        <input type="hidden" name="productId" th:value="${product.id}">
+                        <input type="hidden" name="productName"
+                            th:value="${#locale.language == 'vi' && product.nameVi != null ? product.nameVi : product.name}">
+                        <input type="hidden" name="price" id="formPrice" value="0">
+                        <input type="hidden" name="quantity" value="1">
+
+                        <!-- Size Selection -->
+                        <div class="mb-4" th:if="${!product.sizes.empty}">
+                            <h4 class="fw-bold mb-3" th:text="#{product.choose_size}">Choose Size</h4>
+                            <div class="d-flex gap-3">
+                                <div th:each="size, iterStat : ${product.sizes}" class="position-relative">
+                                    <input type="radio" name="sizeId" th:id="${'size_' + size.id}" th:value="${size.id}"
+                                        th:data-price="${size.price}" class="btn-check size-selector" autocomplete="off"
+                                        th:checked="${iterStat.index == 0}" required>
+                                    <label class="btn btn-outline-dark rounded-pill px-4 py-2 fs-5 fw-bold"
+                                        th:for="${'size_' + size.id}">
+                                        <span th:text="${size.sizeName}">S</span>
+                                        <!-- <small class="d-block" th:text="${'+' + size.price}"></small> -->
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toppings (Placeholder for now, assuming static toppings or fetched) -->
+                        <div class="mb-4" th:if="${!toppings.empty}">
+                            <h4 class="fw-bold mb-3" th:text="#{product.add_toppings}">Add Toppings</h4>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div th:each="top : ${toppings}">
+                                    <input type="checkbox" name="toppingIds" th:id="${'top_' + top.id}"
+                                        th:value="${top.id}" th:data-price="${top.price}"
+                                        class="btn-check topping-selector" autocomplete="off">
+                                    <label class="btn btn-outline-secondary rounded-pill px-3 py-2"
+                                        th:for="${'top_' + top.id}">
+                                        <span th:text="${top.name}">Pearl</span>
+                                        <small class="fw-bold ms-1 text-primary"
+                                            th:text="${'+' + top.price + 'đ'}"></small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sugar & Ice Options -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="fw-bold mb-3" th:text="#{product.sugar_level}">Sugar Level</h5>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sugar" id="sugar100"
+                                            value="100%" checked>
+                                        <label class="form-check-label" for="sugar100"
+                                            th:text="#{product.sugar.normal}">100% (Normal)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sugar" id="sugar70"
+                                            value="70%">
+                                        <label class="form-check-label" for="sugar70">70%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sugar" id="sugar50"
+                                            value="50%">
+                                        <label class="form-check-label" for="sugar50">50%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sugar" id="sugar30"
+                                            value="30%">
+                                        <label class="form-check-label" for="sugar30">30%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="sugar" id="sugar0"
+                                            value="0%">
+                                        <label class="form-check-label" for="sugar0" th:text="#{product.sugar.none}">0%
+                                            (No Sugar)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="fw-bold mb-3" th:text="#{product.ice_level}">Ice Level</h5>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="ice100" value="100%"
+                                            checked>
+                                        <label class="form-check-label" for="ice100"
+                                            th:text="#{product.ice.normal}">100% (Normal)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="ice70" value="70%">
+                                        <label class="form-check-label" for="ice70">70%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="ice50" value="50%">
+                                        <label class="form-check-label" for="ice50">50%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="ice30" value="30%">
+                                        <label class="form-check-label" for="ice30">30%</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="ice0" value="0%">
+                                        <label class="form-check-label" for="ice0" th:text="#{product.ice.none}">0% (No
+                                            Ice)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="ice" id="iceHot" value="Hot">
+                                        <label class="form-check-label text-danger" for="iceHot"
+                                            th:text="#{product.ice.hot}">Hot Drink</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Price Section -->
+                        <div class="mb-4 border-bottom pb-3 w-50">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h4 fw-bold mb-0" th:text="#{product.total_price}">Total Price:</span>
+                                <span class="h2 fw-bold text-primary mb-0" id="btnPrice">0 đ</span>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4 w-50">
+                            <label for="note" class="form-label fw-bold" th:text="#{product.note}">Note for
+                                Barista</label>
+                            <textarea class="form-control" id="note" name="note" rows="3"
+                                th:placeholder="#{product.note.placeholder}"></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 mt-5">
+                            <div class="input-group input-group-lg" style="width: 150px;">
+                                <button class="btn btn-outline-dark" type="button" onclick="adjustQty(-1)"><i
+                                        class="fas fa-minus"></i></button>
+                                <input type="text" class="form-control text-center fw-bold fs-5" id="qtyInput" value="1"
+                                    readonly>
+                                <button class="btn btn-outline-dark" type="button" onclick="adjustQty(1)"><i
+                                        class="fas fa-plus"></i></button>
+                            </div>
+                            <button type="submit"
+                                class="btn btn-primary btn-lg rounded-pill px-5 shadow fs-4 fw-bold text-nowrap d-flex align-items-center justify-content-center"
+                                style="width: 250px;">
+                                <i class="fas fa-cart-plus me-2"></i> <span th:text="#{modal.add_to_cart}">Add to
+                                    Cart</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const sizeRadios = document.querySelectorAll('.size-selector');
+                const toppingChecks = document.querySelectorAll('.topping-selector');
+                const displayPriceEl = document.getElementById('displayPrice');
+                const btnPriceEl = document.getElementById('btnPrice');
+                const formPriceInput = document.getElementById('formPrice');
+                const qtyInput = document.getElementById('qtyInput');
+                const formQtyInput = document.querySelector('input[name="quantity"]');
+
+                function formatCurrency(amount) {
+                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+                }
+
+                function calculatePrice() {
+                    let price = 0;
+
+                    // Get selected size price
+                    const selectedSize = document.querySelector('.size-selector:checked');
+                    if (selectedSize) {
+                        price += parseFloat(selectedSize.getAttribute('data-price'));
+                    }
+
+                    // Get selected toppings price
+                    toppingChecks.forEach(cb => {
+                        if (cb.checked) {
+                            price += parseFloat(cb.getAttribute('data-price'));
+                        }
+                    });
+
+                    // Update display
+                    const qty = parseInt(qtyInput.value);
+                    const total = price * qty;
+
+                    displayPriceEl.textContent = formatCurrency(price); // Unit price
+                    btnPriceEl.textContent = formatCurrency(total); // Total button price
+                    formPriceInput.value = price; // Send unit price to server
+                }
+
+                // Event Listeners
+                sizeRadios.forEach(r => r.addEventListener('change', calculatePrice));
+                toppingChecks.forEach(c => c.addEventListener('change', calculatePrice));
+
+                // Qty Logic
+                window.adjustQty = function (delta) {
+                    let val = parseInt(qtyInput.value);
+                    val += delta;
+                    if (val < 1) val = 1;
+                    if (val > 10) val = 10;
+                    qtyInput.value = val;
+                    formQtyInput.value = val;
+                    calculatePrice();
+                }
+
+                // Initial calc
+                calculatePrice();
+            });
+        </script>
+    </div>
+</body>
+
+</html>

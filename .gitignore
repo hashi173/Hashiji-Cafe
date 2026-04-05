@@ -1,0 +1,36 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.zip
+*.tar.gz
+*.rar
+
+# Maven wrapper
+.mvn/
+
+# Virtual machine crash logs
+hs_err_pid*
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Sensitive / local-only files
+application-dev.properties
+application-local.properties
+.env
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build2.log

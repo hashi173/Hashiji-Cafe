@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Order Management</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Order Management</h1>
+            <span class="badge bg-primary fs-6" th:text="'Total: ' + ${totalItems} + ' orders'">Total: 0 orders</span>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-3">
+                <form action="/admin/orders" method="get" class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label fw-bold">Search:</label>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="search" class="form-control" placeholder="Order ID, Customer, Phone..."
+                            th:value="${search}">
+                    </div>
+                    <div class="col-auto">
+                        <label class="col-form-label fw-bold">Status:</label>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.name()}"
+                                th:selected="${status != null && status == s.name()}">STATUS</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>
+                        <a href="/admin/orders" class="btn btn-outline-secondary" title="Clear"><i
+                                class="fas fa-times"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search Results (Single Table) -->
+        <div th:if="${isSearching}" class="card shadow border-0 rounded-4 mb-5">
+            <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                <h5 class="fw-bold text-primary mb-0"><i class="fas fa-search me-2"></i>Search Results</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3">ID</th>
+                                <th class="py-3">Customer</th>
+                                <th class="py-3">Total</th>
+                                <th class="py-3">Status</th>
+                                <th class="py-3">Date</th>
+                                <th class="py-3 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${searchResults.content}">
+                                <td class="fw-bold" th:text="'#' + ${order.id}">1</td>
+                                <td>
+                                    <div th:text="${order.customerName}">Customer</div>
+                                    <a th:href="'tel:' + ${order.phone}" class="text-decoration-none small" th:text="${order.phone}"></a>
+                                </td>
+                                <td class="fw-bold text-primary"
+                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                </td>
+                                <td><span class="badge" th:text="${order.status}">PENDING</span></td>
+                                <td th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form th:if="${order.status.name() != 'COMPLETED' && order.status.name() != 'CANCELLED'}"
+                                            th:action="@{'/admin/orders/' + ${order.id} + '/cancel'}" method="post">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill"
+                                                onclick="return confirm('Are you sure you want to cancel this order?')"
+                                                title="Cancel Order">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                        <a th:href="@{'/admin/orders/' + ${order.id}}"
+                                            class="btn btn-outline-primary btn-sm rounded-pill">Details</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div
+                    th:replace="~{admin/fragments/pagination :: pagination(${searchResults.number}, ${searchResults.totalPages}, '/admin/orders', ${search}, 'activePage')}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Default View: Dual Tables -->
+        <div th:unless="${isSearching}">
+            <!-- Active Orders Table -->
+            <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h5 class="fw-bold text-success mb-0"><i class="fas fa-clock me-2"></i>Active Orders</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${activeOrders}">
+                                    <td class="fw-bold" th:text="'#' + ${order.id}">1</td>
+                                    <td th:text="${order.customerName}">Name</td>
+                                    <td class="fw-bold text-primary"
+                                        th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2" th:classappend="${order.status.name() == 'PENDING' ? 'bg-warning text-dark' : 
+                                            (order.status.name() == 'PROCESSING' ? 'bg-info' : 'bg-primary')}"
+                                            th:text="${order.status}">PENDING</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="'tel:' + ${order.phone}" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Call Customer">
+                                                <i class="fas fa-phone"></i> Call
+                                            </a>
+                                            <form th:if="${order.status.name() == 'PENDING'}"
+                                                th:action="@{'/admin/orders/' + ${order.id} + '/status'}" method="post">
+                                                <input type="hidden" name="status" value="CONFIRMED">
+                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3"
+                                                    title="Accept Order">
+                                                    <i class="fas fa-check"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form th:if="${order.status.name() != 'COMPLETED' && order.status.name() != 'CANCELLED'}"
+                                                th:action="@{'/admin/orders/' + ${order.id} + '/cancel'}" method="post">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                    onclick="return confirm('Are you sure you want to cancel this order?')"
+                                                    title="Cancel Order">
+                                                    <i class="fas fa-times"></i> Cancel
+                                                </button>
+                                            </form>
+                                            <a th:href="@{'/admin/orders/' + ${order.id}}"
+                                                class="btn btn-outline-primary btn-sm rounded-pill px-3">Details</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(activeOrders)}">
+                                    <td colspan="6" class="text-center py-4 text-muted">No active orders.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Active Pagination -->
+                    <div
+                        th:replace="~{admin/fragments/pagination :: pagination(${activePage}, ${totalActivePages}, '/admin/orders', ${search}, 'activePage')}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Orders Table -->
+            <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-history me-2"></i>Order History</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${historyOrders}">
+                                    <td class="fw-bold" th:text="'#' + ${order.id}">1</td>
+                                    <td th:text="${order.customerName}">Name</td>
+                                    <td class="fw-bold"
+                                        th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2"
+                                            th:classappend="${order.status.name() == 'COMPLETED' ? 'bg-success' : 'bg-danger'}"
+                                            th:text="${order.status}">COMPLETED</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                                    <td class="text-end">
+                                        <a th:href="@{'/admin/orders/' + ${order.id}}"
+                                            class="btn btn-outline-secondary btn-sm rounded-pill px-3">Details</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(historyOrders)}">
+                                    <td colspan="6" class="text-center py-4 text-muted">No order history.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- History Pagination -->
+                    <div
+                        th:replace="~{admin/fragments/pagination :: pagination(${historyPage}, ${totalHistoryPages}, '/admin/orders', ${search}, 'historyPage')}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

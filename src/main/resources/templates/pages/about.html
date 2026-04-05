@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+
+<head>
+    <title>About Us - The Coffee House</title>
+</head>
+
+<body>
+    <div th:fragment="content" class="overflow-hidden bg-texture-paper" style="min-height: 100vh;">
+
+        <!-- Hero: The Quest Begins -->
+        <section class="position-relative d-flex align-items-center justify-content-center text-center"
+            style="min-height: 60vh;">
+            <div class="position-absolute w-100 h-100" style="z-index: 0;">
+                <img src="/images/about/Map.png" class="position-absolute opacity-10 float-slow"
+                    style="top: 5%; left: 5%; width: 40rem; filter: sepia(100%) hue-rotate(190deg) saturate(400%) blur(2px);">
+                <i class="fas fa-compass text-primary opacity-10 float-medium position-absolute"
+                    style="bottom: 30%; right: 15%; font-size: 8rem;"></i>
+            </div>
+
+            <!-- Interactive Bean Container -->
+            <div class="bean-container" id="beanContainer">
+
+                <!-- Arrow for Bean 1 -->
+                <div class="click-arrow" style="top: 332%; left: 12%;">
+                    <span th:text="#{about.bean.click}">Click Me!</span>
+                    <i class="fas fa-arrow-down" style="display: block; transform: rotate(-20deg) translateX(5px);"></i>
+                </div>
+
+                <!-- Floating Bean 1 -->
+                <div class="scattered-bean float-medium"
+                    style="top: 340%; left: 13%; width: 300px; height: 300px; background-image: url('/images/about/RobustaBean.png'); transform: rotate(15deg);"
+                    th:data-info="#{about.stats.arabica.desc}">
+                    <div class="bean-popover"
+                        style="transform: translate(-50%, -120%) rotate(-15deg); animation: none !important;"></div>
+                </div>
+
+                <!-- Floating Bean 2 -->
+                <div class="scattered-bean float-slow"
+                    style="bottom: -270%; right: 17%; width: 260px; height: 260px; background-image: url('/images/about/PeaberryBean.png'); transform: rotate(-10deg);"
+                    th:data-info="#{about.stats.robusta.desc}">
+                    <div class="bean-popover"
+                        style="transform: translate(-50%, -120%) rotate(10deg); animation: none !important;"></div>
+                </div>
+
+                <!-- Click Me Arrow -->
+                <div class="click-arrow" style="bottom: -245%; right: 16%;">
+                    <span th:text="#{about.bean.click}">Click Me!</span>
+                    <i class="fas fa-arrow-down" style="display: block; transform: rotate(30deg) translateX(-5px);"></i>
+                </div>
+            </div>
+
+            <div class="container position-relative z-1">
+                <h1 class="display-1 mb-3 float-slow" th:text="#{about.hero}">The Journey</h1>
+                <p class="lead text-muted mx-auto float-medium" style="max-width: 600px;"
+                    th:text="#{about.description}">
+                    Every cup is a save point. Join us as we traverse the clouds of flavor and the mountains of aroma.
+                </p>
+            </div>
+
+            <script>
+                document.querySelectorAll('.scattered-bean').forEach(bean => {
+                    bean.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        // Close others
+                        document.querySelectorAll('.bean-popover').forEach(p => p.classList.remove('active'));
+
+                        // Show this one
+                        const popover = this.querySelector('.bean-popover');
+                        popover.textContent = this.getAttribute('data-info');
+                        popover.classList.toggle('active');
+                    });
+                });
+
+                // Close on click outside
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.bean-popover').forEach(p => p.classList.remove('active'));
+                });
+            </script>
+        </section>
+
+        <!-- World Map: The Timeline -->
+        <section class="container cloud-path-container">
+            <div class="cloud-path-line d-none d-md-block"></div>
+
+            <!-- Milestone 1: Origin -->
+            <div class="row align-items-center mb-5">
+                <div class="col-md-6 text-end pe-md-5">
+                    <div
+                        class="floating-island island-left float-slow d-flex flex-column align-items-center justify-content-center text-center">
+                        <h2 class="h3 fw-bold text-primary" th:text="#{about.origin.title}">The Origin</h2>
+                        <span class="badge bg-secondary mb-3">Est. 2023</span>
+                        <p th:utext="#{about.origin.desc}">
+                            It began with a single bean and a dream. We set up camp in the misty highlands of Dalat,
+                            seeking the legendary <span class="fw-bold text-accent">Perfect Roast</span>.
+                        </p>
+                    </div>
+
+                </div>
+                <div class="col-md-6 ps-md-5">
+                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        class="img-fluid img-droplet float-medium" alt="Coffee Origin">
+                </div>
+            </div>
+
+            <!-- Milestone 2: Craft -->
+            <div class="row align-items-center mb-5 flex-md-row-reverse">
+                <div class="col-md-6 text-start ps-md-5">
+                    <div
+                        class="floating-island island-right float-medium d-flex flex-column align-items-center justify-content-center text-center">
+                        <h2 class="h3 fw-bold text-primary" th:text="#{about.craft.title}">Specialization</h2>
+                        <span class="badge bg-accent text-dark mb-3" th:text="#{about.craft.badge}">Artisan
+                            Roasting</span>
+                        <p th:text="#{about.craft.desc}">
+                            We unlocked the secrets of the bean. Small-batch roasting ensures every flavor note
+                            is captured in high fidelity.
+                        </p>
+                    </div>
+
+                </div>
+                <div class="col-md-6 pe-md-5 text-center">
+                    <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        class="img-fluid img-droplet float-slow" style="animation-delay: 1s;" alt="Roasting">
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory: Bean Stats -->
+        <section class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="display-3 float-slow" th:text="#{about.stats.title}">Great Beans</h2>
+                <p class="text-muted" th:text="#{about.stats.subtitle}">Equipped items for your daily brew.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <!-- Item: Arabica -->
+                <div class="col-md-5">
+                    <div class="rpg-card h-100 float-medium">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-leaf fa-2x"></i>
+                            </div>
+                            <div>
+                                <h3 class="h4 fw-bold mb-0" th:text="#{about.stats.arabica}">Arabica Essence</h3>
+                                <small class="text-muted text-uppercase" th:text="#{about.rarity.legendary}">Rarity:
+                                    Legendary</small>
+                            </div>
+                        </div>
+                        <p class="mb-4" th:text="#{about.stats.arabica.desc}">Cultivated in high altitudes. Grants
+                            clarity +10 and refined taste.</p>
+
+                        <!-- Stats -->
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small fw-bold"><span>Acidity</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill" style="width: 85%;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small fw-bold"><span>Aroma</span>
+                                <span>95%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill" style="width: 95%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between small fw-bold"><span>Bitterness</span>
+                                <span>30%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill" style="width: 30%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item: Robusta -->
+                <div class="col-md-5">
+                    <div class="rpg-card h-100 float-fast" style="animation-delay: 0.5s;">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-dark text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-bolt fa-2x"></i>
+                            </div>
+                            <div>
+                                <h3 class="h4 fw-bold mb-0" th:text="#{about.stats.robusta}">Robusta Core</h3>
+                                <small class="text-muted text-uppercase" th:text="#{about.rarity.epic}">Rarity:
+                                    Epic</small>
+                            </div>
+                        </div>
+                        <p class="mb-4" th:text="#{about.stats.robusta.desc}">Strong and bold. Grants Energy +50 and
+                            Wakefulness.</p>
+
+                        <!-- Stats -->
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small fw-bold"><span>Caffeine</span>
+                                <span>98%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill bg-dark" style="width: 98%;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small fw-bold"><span>Body</span> <span>90%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill bg-dark" style="width: 90%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between small fw-bold"><span>Sweetness</span>
+                                <span>10%</span>
+                            </div>
+                            <div class="rpg-stat-bar">
+                                <div class="rpg-stat-fill bg-dark" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Party Members -->
+        <section class="container py-5 mb-5">
+            <div class="text-center mb-5">
+                <h2 class="display-3 float-slow" th:text="#{about.team.title}">The Party</h2>
+                <p class="text-muted" th:text="#{about.team.subtitle}">Meet your companions.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-4 col-md-6">
+                    <div class="char-card float-hover-effect d-flex flex-column align-items-center">
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="Mochi">
+                        <span class="char-role" th:text="#{about.team.role1}">All-day Napper</span>
+                        <h3 class="fw-bold">Mochi</h3>
+                        <p class="small text-muted" th:utext="#{about.team.ability1}">Special Ability: <strong
+                                class="text-primary">Purr Therapy</strong>.
+                            Restores HP to all nearby customers.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="char-card float-hover-effect d-flex flex-column align-items-center"
+                        style="transform: translateY(20px);">
+                        <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="Yuzu">
+                        <span class="char-role" th:text="#{about.team.role2}">Mouse Hunter</span>
+                        <h3 class="fw-bold">Yuzu</h3>
+                        <p class="small text-muted" th:utext="#{about.team.ability2}">Special Ability: <strong
+                                class="text-primary">Laser Chase</strong>.
+                            Increases agility and chaos by 200%.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="char-card float-hover-effect d-flex flex-column align-items-center">
+                        <!-- New Kuma Image -->
+                        <img src="https://images.unsplash.com/photo-1519052537078-e6302a4968d4?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            alt="Kuma">
+                        <span class="char-role" th:text="#{about.team.role3}">The crazy&cute one</span>
+                        <h3 class="fw-bold">Kuma</h3>
+                        <p class="small text-muted" th:utext="#{about.team.ability3}">Special Ability: <strong
+                                class="text-primary">Judgement
+                                Stare</strong>.
+                            Protects the counter from unauthorized belly rubs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

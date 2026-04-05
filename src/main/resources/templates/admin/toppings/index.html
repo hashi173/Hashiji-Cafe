@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+
+<head>
+    <title>Manage Toppings</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 mb-0 text-gray-800"><i class="fas fa-layer-group me-2"></i>Toppings Management</h2>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-plus me-1"></i> Add Topping
+            </button>
+        </div>
+
+        <!-- Alert Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price (đ)</th>
+                                <th style="width: 150px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="topping : ${toppings}">
+                                <td th:text="${topping.id}">1</td>
+                                <td th:text="${topping.name}" class="fw-bold">Pearl</td>
+                                <td th:text="${#numbers.formatDecimal(topping.price, 0, 'COMMA', 0, 'POINT')}">5,000
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info text-white" th:data-id="${topping.id}"
+                                        th:data-name="${topping.name}" th:data-price="${topping.price}"
+                                        onclick="editTopping(this)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a th:href="@{/admin/toppings/delete/{id}(id=${topping.id})}"
+                                        class="btn btn-sm btn-danger" onclick="return confirm('Delete this topping?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${toppings.empty}">
+                                <td colspan="4" class="text-center text-muted">No toppings found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Modal -->
+        <div class="modal fade" id="toppingModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/admin/toppings/save}" method="post">
+                        <input type="hidden" name="id" id="toppingId">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalTitle">Add Topping</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Topping Name</label>
+                                <input type="text" class="form-control" name="name" id="toppingName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Price (VNĐ)</label>
+                                <input type="number" class="form-control" name="price" id="toppingPrice" required
+                                    min="0" step="500">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Topping</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openModal() {
+                document.getElementById('toppingId').value = '';
+                document.getElementById('toppingName').value = '';
+                document.getElementById('toppingPrice').value = '';
+                document.getElementById('modalTitle').innerText = 'Add Topping';
+                new bootstrap.Modal(document.getElementById('toppingModal')).show();
+            }
+
+            function editTopping(btn) {
+                document.getElementById('toppingId').value = btn.getAttribute('data-id');
+                document.getElementById('toppingName').value = btn.getAttribute('data-name');
+                document.getElementById('toppingPrice').value = btn.getAttribute('data-price');
+                document.getElementById('modalTitle').innerText = 'Edit Topping';
+                new bootstrap.Modal(document.getElementById('toppingModal')).show();
+            }
+        </script>
+    </div>
+</body>
+
+</html>

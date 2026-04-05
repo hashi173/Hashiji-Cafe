@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+
+<title>Careers - Join the Team</title>
+</head>
+
+<body>
+    <!-- Apply Paper Texture Wrapper -->
+    <div th:fragment="content" class="overflow-hidden position-relative bg-watercolor-stars" style="min-height: 100vh;">
+
+        <!-- Watercolor Decoration Spots -->
+        <div class="watercolor-spot bg-spot-blue" style="top: -100px; right: -100px;"></div>
+        <div class="watercolor-spot bg-spot-gold" style="bottom: 10%; left: 5%;"></div>
+        <div class="watercolor-spot bg-spot-blue" style="top: 40%; left: -150px; opacity: 0.2;"></div>
+
+        <!-- Hero Section: Deep Space -->
+        <!-- Hero: Team -->
+        <div class="container position-relative z-1 py-5 text-center" style="min-height: 40vh;">
+            <div class="d-flex justify-content-center align-items-center flex-column pt-5">
+                <i class="fas fa-users text-secondary mb-4 float-fast" style="font-size: 5rem;"></i>
+                <h1 class="display-1 fw-bold text-primary mb-3" th:text="#{careers.hero}">
+                    Grow With Us</h1>
+                <p class="lead text-muted" style="max-width: 600px;" th:text="#{careers.hero.desc}">
+                    We are looking for passionate talent to join our artisan coffee family.
+                </p>
+            </div>
+        </div>
+
+        <!-- Job Constellation System -->
+        <div class="container position-relative z-1 pb-5">
+            <div class="text-center mb-5">
+                <h2 class="display-4 text-secondary mb-4" th:text="#{careers.jobs}">Active Missions</h2>
+            </div>
+
+            <div th:if="${success}"
+                class="alert alert-success bg-transparent border-success text-white w-50 mx-auto mb-5 text-center backdrop-blur">
+                <i class="fas fa-check-circle me-2 text-success"></i>
+                <span th:text="${success}"></span>
+                <br>
+                <strong class="text-warning fs-4 mt-2 d-block" th:text="${trackingCode}"></strong>
+            </div>
+
+            <div class="row justify-content-center g-5 perspective-container">
+                <!-- Dynamic Job Orbs -->
+                <div th:each="job : ${jobs}" class="col-md-6 col-lg-4 d-flex justify-content-center">
+                    <div class="job-star-card float-medium">
+                        <i class="fas fa-star text-warning mb-3 fs-3"></i>
+                        <h3 class="h4 fw-bold text-white mb-2" th:text="${job.title}">Barista</h3>
+                        <p class="text-white-50 small mb-4">
+                            <i class="fas fa-map-marker-alt me-1"></i> <span th:text="${job.location}">Moon Base
+                                1</span>
+                        </p>
+                        <!-- Description removed from card as requested -->
+
+                        <button class="btn btn-outline-light rounded-pill px-4" th:data-position="${job.title}"
+                            th:data-description="${job.description}"
+                            onclick="openApplyModal(this.getAttribute('data-position'), this.getAttribute('data-description'))"
+                            th:text="#{careers.initiate_launch}">
+                            Initiate Launch
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div th:if="${#lists.isEmpty(jobs)}" class="col-12 text-center py-5">
+                    <div class="text-white-50">
+                        <i class="fas fa-satellite fa-3x mb-3 float-slow"></i>
+                        <h3>Scanner detects no signals.</h3>
+                        <p>Check back for future transmissions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Decor: Floating Astronaut -->
+        <div class="position-absolute astronaut-float" style="top: 20%; right: 10%; opacity: 0.8; z-index: 0;">
+            <img src="images/careers/astronaut.png" class="rounded-circle shadow-lg"
+                style="width: 200px; height: 200px; object-fit: cover; mask-image: radial-gradient(circle, black 60%, transparent 100%);"
+                alt="Astronaut">
+        </div>
+
+        <!-- Apply Modal (Light Theme) -->
+        <div class="modal fade" id="applyModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-white text-dark border-0 shadow-lg"
+                    style="background: rgba(255,255,255,0.95);">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title">Apply for: <span id="modalPosition" class="text-primary">Position</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/careers/apply}" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <!-- Job Description Display -->
+                            <div class="mb-4 p-3 rounded bg-light border-start border-4 border-primary">
+                                <h6 class="text-secondary text-uppercase small letter-spacing-2 mb-2">Role Overview</h6>
+                                <p id="modalDescription" class="mb-0 small text-muted">Job description goes here...
+                                </p>
+                            </div>
+
+                            <input type="hidden" name="position" id="positionInput">
+                            <div class="mb-3">
+                                <label class="form-label text-muted" th:text="#{checkout.fullname}">Full Name</label>
+                                <input type="text" name="fullName" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted" th:text="#{careers.email}">Email Address</label>
+                                <input type="email" name="email" class="form-control" required
+                                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                    title="Enter a valid email (e.g., user@example.com)">
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted" th:text="#{careers.phone}">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" required pattern="0[35789][0-9]{8}"
+                                    title="Enter a valid Vietnam phone number (10 digits, e.g., 0912345678)">
+                                <div class="invalid-feedback">Please enter a valid phone number (10 digits).</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted" th:text="#{careers.cv}">CV/Resume</label>
+                                <input type="file" name="cvFile" class="form-control" accept=".pdf,.doc,.docx" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal"
+                                th:text="#{careers.cancel}">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4"
+                                th:text="#{careers.submit}">Submit Application</button>
+                        </div>
+                </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Script INSIDE the fragment so it gets included in layout -->
+        <script>
+            function openApplyModal(position, description) {
+                console.log("Opening modal for:", position);
+                var modalEl = document.getElementById('applyModal');
+                if (!modalEl) {
+                    console.error("Modal element not found!");
+                    alert("Error: Modal not found. Please refresh the page.");
+                    return;
+                }
+
+                document.getElementById('modalPosition').textContent = position;
+                document.getElementById('positionInput').value = position;
+                document.getElementById('modalDescription').textContent = description;
+
+                // Check if bootstrap is available
+                if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                    console.error("Bootstrap not loaded!");
+                    alert("Error: Bootstrap not loaded. Please refresh the page.");
+                    return;
+                }
+
+                var myModal = new bootstrap.Modal(modalEl);
+                myModal.show();
+            }
+        </script>
+    </div>
+</body>
+
+</html>
