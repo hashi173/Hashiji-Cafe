@@ -257,20 +257,59 @@
                     <p class="lead text-muted mx-auto" style="max-width: 700px; font-size: 1.3rem;"
                         th:text="#{home.menu.taste}">Taste the ocean.</p>
 
-                    <!-- Filter Buttons -->
-                    <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap" id="category-filters">
-                        <button class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter active"
-                            hx-get="/products/fragment?categoryId=0" hx-target="#productContainer" hx-swap="outerHTML"
-                            onclick="updateActiveFilter(this)">All</button>
-                        <button th:each="cat : ${categories}" th:hx-get="@{/products/fragment(categoryId=${cat.id})}"
-                            hx-target="#productContainer" hx-swap="outerHTML"
-                            class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter position-relative"
-                            onclick="updateActiveFilter(this)">
-                            <span th:text="${cat.name}">Category</span>
-                            <span th:if="${cat.name == 'Coffee'}" class="position-absolute translate-middle badge"
-                                style="left: 90%; top: 0%; background: #FFD700; width: 40px; height: 40px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); transform: rotate(15deg); filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000);">
-                            </span>
-                        </button>
+                    <!-- Filter & Search Controls -->
+                    <div class="container-fluid mt-4">
+                        <div class="row g-3 align-items-center justify-content-center">
+                            <!-- Categories Column -->
+                            <div class="col-lg-auto">
+                                <div class="d-flex justify-content-center gap-2 flex-wrap" id="category-filters">
+                                    <button class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter active"
+                                        hx-get="/products/fragment?categoryId=0" 
+                                        hx-target="#productContainer" 
+                                        hx-swap="outerHTML"
+                                        hx-indicator="#menu-loader"
+                                        hx-sync="this:replace"
+                                        onclick="onCategoryClick(this)">All</button>
+                                    <button th:each="cat : ${categories}" 
+                                        th:hx-get="@{/products/fragment(categoryId=${cat.id})}"
+                                        hx-target="#productContainer" 
+                                        hx-swap="outerHTML"
+                                        hx-indicator="#menu-loader"
+                                        hx-sync="this:replace"
+                                        class="btn btn-outline-primary px-3 py-2 rounded-pill category-filter position-relative"
+                                        onclick="onCategoryClick(this)">
+                                        <span th:text="${cat.name}">Category</span>
+                                        <span th:if="${cat.name == 'Coffee'}" class="position-absolute translate-middle badge"
+                                            style="left: 90%; top: 0%; background: #FFD700; width: 40px; height: 40px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); transform: rotate(15deg); filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000);">
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Search Column -->
+                            <div class="col-lg-3 col-md-6 col-11">
+                                <div class="position-relative">
+                                    <i class="fas fa-search position-absolute text-muted" style="top: 50%; left: 15px; transform: translateY(-50%);"></i>
+                                    <input type="text" name="keyword"
+                                        class="form-control rounded-pill border-primary ps-5 py-2"
+                                        placeholder="Search menu..."
+                                        hx-get="/products/fragment"
+                                        hx-target="#productContainer"
+                                        hx-include="this"
+                                        hx-trigger="keyup changed delay:500ms"
+                                        hx-indicator="#menu-loader"
+                                        hx-sync="this:replace"
+                                        onfocus="clearCategoryFilters()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="menu-loader" class="htmx-indicator mt-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
                     </div>
                 </div>
 
@@ -539,6 +578,14 @@
 
         <!-- HTMX Filter Script -->
         <script>
+            function onCategoryClick(clickedBtn) {
+                // Clear search input if a category is clicked
+                const searchInput = document.querySelector('input[name="keyword"]');
+                if (searchInput) searchInput.value = '';
+                
+                updateActiveFilter(clickedBtn);
+            }
+
             function updateActiveFilter(clickedBtn) {
                 document.querySelectorAll('.category-filter').forEach(btn => {
                     btn.classList.remove('active');
@@ -548,6 +595,14 @@
                 clickedBtn.classList.add('active');
                 clickedBtn.style.backgroundColor = 'var(--primary)';
                 clickedBtn.style.color = 'white';
+            }
+
+            function clearCategoryFilters() {
+                // Set "All" category as active when search bar is focused
+                const allBtn = document.querySelector('.category-filter[hx-get*="categoryId=0"]');
+                if (allBtn) {
+                    updateActiveFilter(allBtn);
+                }
             }
 
             let currentCarouselPage = 0;
@@ -613,8 +668,24 @@
                 style.textContent = `
                     .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
                     @keyframes fadeInUp {
-                        from { opacity: 0;}
-                        to { opacity: 1;}
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .htmx-indicator { 
+                        display: none; 
+                        opacity: 0;
+                        transition: opacity 200ms ease-in;
+                    }
+                    .htmx-request .htmx-indicator { 
+                        display: inline-block; 
+                        opacity: 1;
+                    }
+                    .htmx-request #productContainer {
+                        opacity: 0.5;
+                        filter: blur(1px);
+                    }
+                    #productContainer {
+                        transition: opacity 0.3s ease, filter 0.3s ease;
                     }
                 `;
                 document.head.appendChild(style);
@@ -624,6 +695,9 @@
                 document.body.addEventListener('htmx:afterSwap', function(evt) {
                     if (evt.detail.target.id === 'productContainer') {
                         initCarousel();
+                        // Reset carousel position to first page on category change
+                        currentCarouselPage = 0;
+                        updateCarouselView(0);
                     }
                 });
 

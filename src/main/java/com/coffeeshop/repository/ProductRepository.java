@@ -12,7 +12,8 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
         List<Product> findByCategoryId(Long categoryId);
 
-        List<Product> findByCategoryIdAndActiveTrue(Long categoryId);
+        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.category.id = :categoryId AND p.active = true")
+        List<Product> findByCategoryIdAndActiveTrue(@Param("categoryId") Long categoryId);
 
         List<Product> findByActiveTrue();
 

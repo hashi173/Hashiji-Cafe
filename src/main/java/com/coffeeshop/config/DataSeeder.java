@@ -398,34 +398,34 @@ public class DataSeeder implements CommandLineRunner {
                 createProduct("Espresso", "Espresso",
                                 "Intense double-shot espresso with edible gold dust. Bold, dark, and aromatic.",
                                 "Espresso đậm đà hai shot với bụi vàng ăn được. Đậm, đen và thơm nồng.",
-                                "espresso,coffee,cà phê,strong,mạnh,bitter,đắng,black,đen,no milk,không sữa,bold,shot",
+                                "espresso,coffee,cà phê,strong,mạnh,bitter,đắng,black,đen,no milk,không sữa,bold,shot,hot,nóng",
                                 "/images/products/Espresso.png", coffee, 45000.0);
 
                 // --- Tea Category ---
                 createProduct("Peach Tea", "Trà Đào",
                                 "Refreshing peach tea with fresh peach slices, mint leaves, and light sweetness. Served iced.",
                                 "Trà đào thanh mát với lát đào tươi, lá bạc hà và vị ngọt nhẹ. Phục vụ đá.",
-                                "tea,trà,peach,đào,fruit,trái cây,refreshing,mát,iced,đá,sweet,ngọt,no milk,không sữa",
+                                "tea,trà,peach,đào,fruit,trái cây,refreshing,mát,iced,đá,lạnh,cold,sweet,ngọt,no milk,không sữa",
                                 "/images/products/PeachTea.png", tea, 55000.0);
 
                 createProduct("Sakura Blossom Tea", "Trà Hoa Anh Đào",
                                 "Delicate cherry blossom infused tea with subtle floral notes. Light and elegant.",
                                 "Trà tinh tế hương hoa anh đào với hương hoa nhẹ nhàng. Thanh và tinh tế.",
-                                "tea,trà,sakura,cherry blossom,hoa anh đào,floral,hoa,light,nhẹ,no milk,không sữa,elegant",
+                                "tea,trà,sakura,cherry blossom,hoa anh đào,floral,hoa,light,nhẹ,no milk,không sữa,elegant,hot,nóng",
                                 "/images/products/SakuraBlossomTea.png", tea, 58000.0);
 
                 // --- Smoothie Category ---
                 createProduct("Strawberry Smoothie", "Sinh tố Dâu",
                                 "Thick strawberry smoothie blended with fresh milk, condensed milk, and real strawberries.",
                                 "Sinh tố dâu đặc sánh xay với sữa tươi, sữa đặc và dâu tây thật.",
-                                "smoothie,sinh tố,strawberry,dâu,milk,sữa,cream,kem,sweet,ngọt,cold,lạnh,fruit,trái cây,blended,xay,condensed milk,sữa đặc",
+                                "smoothie,sinh tố,strawberry,dâu,milk,sữa,cream,kem,sweet,ngọt,cold,lạnh,đá,ice,fruit,trái cây,blended,xay,condensed milk,sữa đặc",
                                 "/images/products/StrawberrySmoothie.png", smoothie, 60000.0);
 
                 // --- Juice Category ---
                 createProduct("Coconut Juice", "Nước Dừa",
                                 "Fresh young coconut water with coconut jelly. Natural and hydrating with no dairy.",
                                 "Nước dừa tươi non với thạch dừa. Tự nhiên và bổ dưỡng, không sữa.",
-                                "coconut,dừa,juice,nước,fresh,tươi,no milk,không sữa,natural,tự nhiên,hydrating,cold,lạnh,healthy,no sugar,ít đường",
+                                "coconut,dừa,juice,nước,fresh,tươi,no milk,không sữa,natural,tự nhiên,hydrating,cold,lạnh,đá,ice,healthy,no sugar,ít đường",
                                 "/images/products/CoconutJuice.png", juice, 50000.0);
 
                 System.out.println("Products seeded with AI tags.");

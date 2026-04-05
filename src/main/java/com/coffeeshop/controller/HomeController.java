@@ -35,10 +35,11 @@ public class HomeController {
     @GetMapping("/products/fragment")
     public String getProductsFragment(
             @org.springframework.web.bind.annotation.RequestParam(name = "categoryId", required = false) Long categoryId,
+            @org.springframework.web.bind.annotation.RequestParam(name = "keyword", required = false) String keyword,
             Model model) {
         if (categoryId != null && categoryId == 0)
             categoryId = null; // Treat 0 as All
-        model.addAttribute("products", productService.getProductsByCategory(categoryId));
+        model.addAttribute("products", productService.searchProductsForMenu(keyword, categoryId));
         return "home :: productList"; // Return only the fragment
     }
 

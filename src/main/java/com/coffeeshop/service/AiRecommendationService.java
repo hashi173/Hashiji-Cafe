@@ -236,40 +236,144 @@ public class AiRecommendationService {
     // ========================
 
     /**
-     * Matches user free-text query against all active products.
-     * Tags are weighted 3x to ensure ingredient-level queries (e.g., "sữa")
-     * correctly prioritize relevant products over incidental name matches.
+     * Matches user free-text query against all active products using weighted fuzzy scoring.
+     * Weights Name and Tags significantly higher than Description to ensure relevance.
+     * Only returns "Best Sellers" if absolutely no matches are found.
      */
     public List<Product> getRecommendationsByQuery(String query, int limit) {
         if (query == null || query.isBlank()) return getBestSellers(limit);
 
         List<Product> allProducts = productRepository.findByActiveTrue();
-        Map<String, Integer> queryVector = getTermFrequency(query.toLowerCase());
-
+        String[] queryTerms = query.toLowerCase().split("\\W+");
+        
         Map<Long, Double> scores = new HashMap<>();
         Map<Long, Product> productMap = new HashMap<>();
 
         for (Product p : allProducts) {
-            String text = buildProductText(p);
-            Map<String, Integer> pVector = getTermFrequency(text);
+            double productScore = 0;
+            
+            // Collect fields for matching
+            String name = (p.getName() != null ? p.getName() : "").toLowerCase();
+            String nameVi = (p.getNameVi() != null ? p.getNameVi() : "").toLowerCase();
+            String category = (p.getCategory() != null ? p.getCategory().getName() : "").toLowerCase();
+            String tags = (p.getTags() != null ? p.getTags().replace(",", " ") : "").toLowerCase();
+            String desc = (p.getDescription() != null ? p.getDescription() : "").toLowerCase();
+            String descVi = (p.getDescriptionVi() != null ? p.getDescriptionVi() : "").toLowerCase();
 
-            double score = 0;
-            for (String qTerm : queryVector.keySet()) {
-                score += pVector.getOrDefault(qTerm, 0) * 1.5;
+            for (String qTerm : queryTerms) {
+                if (qTerm.length() < 2) continue;
+
+                // 1. Name Match (Highest weight)
+                if (name.contains(qTerm) || nameVi.contains(qTerm)) {
+                    productScore += 100.0; // Higher weight for name
+                    if (name.equals(qTerm) || nameVi.equals(qTerm)) productScore += 50.0; // Exact match bonus
+                } else if (isFuzzyMatch(qTerm, name) || isFuzzyMatch(qTerm, nameVi)) {
+                    productScore += 40.0;
+                }
+
+                // 2. Tag Match (High weight)
+                if (tags.contains(qTerm)) {
+                    productScore += 60.0;
+                } else if (isFuzzyMatch(qTerm, tags)) {
+                    productScore += 30.0;
+                }
+
+                // 3. Category Match (Medium weight)
+                if (category.contains(qTerm)) {
+                    productScore += 10.0;
+                }
+
+                // 4. Description Match (Low weight - noise prevention)
+                if (desc.contains(qTerm) || descVi.contains(qTerm)) {
+                    productScore += 5.0; // Very low weight for description
+                }
             }
 
-            if (score > 0) {
-                scores.put(p.getId(), score);
+            if (productScore > 0) {
+                scores.put(p.getId(), productScore);
                 productMap.put(p.getId(), p);
             }
         }
 
-        if (scores.isEmpty()) return getBestSellers(limit);
+        // Fallback to best sellers only if 0 results match
+        if (scores.isEmpty()) {
+            List<Product> bestSellers = getBestSellers(limit);
+            // Apply common sense filter even to best sellers
+            return filterByCommonSense(bestSellers, query);
+        }
 
-        return scores.entrySet().stream()
-                .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
+        // Filter out low-relevance results (Significance Threshold: 40% of top score)
+        double maxScore = scores.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+        double threshold = maxScore * 0.4;
+
+        List<Product> matches = scores.entrySet().stream()
+                .filter(e -> e.getValue() >= threshold)
+                .sorted((a, b) -> Double.compare(b.getValue().doubleValue(), a.getValue().doubleValue()))
                 .limit(limit)
                 .map(e -> productMap.get(e.getKey()))
                 .collect(Collectors.toList());
+        
+        return filterByCommonSense(matches, query);
+    }
+
+    /**
+     * Filters list of products based on "common sense" intent (Hot vs Cold).
+     * If query mentions "nóng" (hot), it removes items tagged as "lạnh" (cold).
+     */
+    private List<Product> filterByCommonSense(List<Product> list, String query) {
+        String q = query.toLowerCase();
+        boolean userWantsHot = q.contains("nóng") || q.contains("hot") || q.contains("ấm");
+        boolean userWantsCold = q.contains("lạnh") || q.contains("đá") || q.contains("cold") || q.contains("buốt");
+
+        if (!userWantsHot && !userWantsCold) return list;
+
+        return list.stream().filter(p -> {
+            String tags = (p.getTags() != null ? p.getTags() : "").toLowerCase();
+            String desc = (p.getDescription() != null ? p.getDescription() : "").toLowerCase();
+            String info = tags + " " + desc;
+
+            if (userWantsHot) {
+                // If user wants HOT, but product is explicitly COLD and NOT HOT, filter it out
+                // Exception: if it's both (like some teas), keep it
+                return !((info.contains("lạnh") || info.contains("đá") || info.contains("cold")) 
+                         && !(info.contains("hot") || info.contains("nóng")));
+            }
+            if (userWantsCold) {
+                // If user wants COLD, but product is explicitly HOT and NOT COLD, filter it out
+                return !((info.contains("nóng") || info.contains("hot") || info.contains("ấm")) 
+                         && !(info.contains("đá") || info.contains("lạnh") || info.contains("cold")));
+            }
+            return true;
+        }).collect(Collectors.toList());
+    }
+
+    /** Sensitive fuzzy matching using word-length dependent distance */
+    private boolean isFuzzyMatch(String queryTerm, String targetText) {
+        if (targetText == null || targetText.isEmpty()) return false;
+        if (queryTerm.length() <= 3) return false; // Words like "trà" must match exactly in contains()
+
+        String[] targetTokens = targetText.split("\\W+");
+        for (String token : targetTokens) {
+            if (token.length() < 3) continue;
+            int distance = calculateLevenshteinDistance(queryTerm, token);
+            // Stricter distance logic
+            int maxDistance = (queryTerm.length() > 6) ? 2 : 1;
+            if (distance <= maxDistance) return true;
+        }
+        return false;
+    }
+
+    private int calculateLevenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+        for (int i = 0; i <= s1.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= s2.length(); j++) dp[0][j] = j;
+
+        for (int i = 1; i <= s1.length(); i++) {
+            for (int j = 1; j <= s2.length(); j++) {
+                int cost = (s1.charAt(i - 1) == s2.charAt(j - 1)) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+        return dp[s1.length()][s2.length()];
     }
 }

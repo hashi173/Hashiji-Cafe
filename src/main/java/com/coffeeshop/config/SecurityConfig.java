@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         // Public pages
                         .requestMatchers("/", "/menu/**", "/product/**", "/products/**", "/cart/**", "/checkout/**",
-                                "/invoice/**",
+                                "/invoice/**", "/api/ai/**",
                                 "/tracking", "/tracking/**", "/tracking/search", "/tracking/cancel",
                                 "/about", "/careers", "/careers/apply", "/info", "/contact", "/register", "/login",
                                 "/error")
