@@ -8,6 +8,12 @@ A full-stack coffee shop management platform built with **Java 17 / Spring Boot 
 
 ## Key Features
 
+### Advanced DBMS Integration (Course Demo)
+- **UUID Primary Keys**: Secure and globally unique identifiers used across all tables instead of predictable sequential IDs.
+- **Stored Procedures**: Complex atomic operations (e.g., `place_order` for inventory deduction and cart processing, `get_revenue_report` for fast data aggregation) handled directly by PostgreSQL to minimize network roundtrips.
+- **Database Triggers**: Automated data consistency rules (e.g., auto-updating product ratings upon new reviews, logging cart behaviors, enforcing single default addresses).
+- **ACID Transactions**: Demonstrable rollback capabilities when placing an order with insufficient inventory.
+
 ### Customer Storefront (Public)
 - Responsive SPA-style homepage with product carousel, careers portal, and contact form
 - Full shopping cart with size and topping customization
@@ -58,7 +64,7 @@ A full-stack coffee shop management platform built with **Java 17 / Spring Boot 
 | Layer       | Technology                                      |
 |-------------|------------------------------------------------|
 | Backend     | Java 17, Spring Boot 3.2, Spring Security, JPA |
-| Database    | PostgreSQL (Supabase cloud or local)            |
+| Database    | PostgreSQL (Supabase cloud, Docker, or local)   |
 | Frontend    | Thymeleaf, Bootstrap 5, HTMX, Chart.js          |
 | AI/ML       | Custom TF-IDF, Cosine Similarity, KNN (no external APIs) |
 | Caching     | Spring Cache (Simple / Redis)                   |
@@ -66,47 +72,24 @@ A full-stack coffee shop management platform built with **Java 17 / Spring Boot 
 
 ---
 
-## Quick Start
+## Quick Start (DBMS Demo Mode)
 
 ### Prerequisites
+- Docker & Docker Compose (for the local PostgreSQL instance)
 - Java 17+
-- PostgreSQL database (or free [Supabase](https://supabase.com) account)
 
-### 1. Clone and configure
-
+### 1. Run Everything via Docker Compose
+The project includes a `docker-compose.yml` to spin up PostgreSQL 15, pgAdmin 4, and the Spring Boot application (Backend + Frontend) all at once.
 ```bash
-git clone https://github.com/hashi173/Hashiji-Cafe.git
-cd Hashiji-Cafe
+docker compose up -d --build
 ```
 
-Create `src/main/resources/application-dev.properties` (this file is gitignored):
-
-```properties
-DB_URL=jdbc:postgresql://YOUR_HOST:PORT/postgres
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
-
-### 2. Run (first time with seed data)
-
-```powershell
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--app.seed-data=true"
-```
-
-### 3. Run (subsequent)
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-Access at `http://localhost:8080`
-
-### Default Accounts
-
-| Role  | Username | Password |
-|-------|----------|----------|
-| Admin | admin    | 123456   |
-| Staff | barista1 | 123456   |
+### 2. Initialize Database & Run DBMS Demo
+We have prepared a complete SQL script featuring Triggers, Stored Procedures, and Transactions for the DBMS course report.
+1. When running `docker compose up -d` for the first time, PostgreSQL will automatically execute `schema-advanced.sql` and `seed-data.sql` to generate the schema and insert mock data.
+2. The web application will be available at `http://localhost:8080`.
+3. Access the database via pgAdmin (`http://localhost:5050`) or `psql`.
+4. Follow the detailed steps in the [db_demo_script.md](db_demo_script.md) file to showcase Triggers, Stored Procedures, and Transactions to your instructor.
 
 ---
 
@@ -129,11 +112,13 @@ src/main/java/com/coffeeshop/
   config/       -- Security, data seeding, MVC, Redis configuration
   controller/   -- REST and MVC controllers (19 controllers)
   dto/          -- Data transfer objects for cart, POS, etc.
-  entity/       -- JPA entities (19 entities)
+  entity/       -- JPA entities (UUID based)
   repository/   -- Spring Data JPA repositories
   service/      -- Business logic and AI recommendation engine
 
 src/main/resources/
+  schema-advanced.sql -- Advanced PostgreSQL Features (Triggers/Procedures)
+  seed-data.sql       -- Raw SQL insert statements (Users, Products, Orders) for DBMS demo
   templates/    -- Thymeleaf templates (admin, cart, checkout, tracking, etc.)
   static/       -- CSS, JS, product images
   messages*.properties -- i18n message bundles (EN/VI)

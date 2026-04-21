@@ -41,5 +41,22 @@ services:
       postgres:
         condition: service_healthy
 
+  # ── Backend + Frontend (Spring Boot App) ──────────────────
+  hashiji-app:
+    build: .
+    container_name: hashiji-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Kết nối tới service 'postgres' trong cùng mạng Docker thay vì 'localhost'
+      DB_URL: jdbc:postgresql://postgres:5432/cafe_db
+      DB_USERNAME: cafe_admin
+      DB_PASSWORD: strong_password_here
+      APP_PROFILE: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:
