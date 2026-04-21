@@ -13,7 +13,7 @@ services:
     environment:
       POSTGRES_DB: cafe_db
       POSTGRES_USER: cafe_admin
-      POSTGRES_PASSWORD: strong_password_here
+      POSTGRES_PASSWORD: 123
     ports:
       - "5432:5432"
     volumes:
@@ -52,7 +52,7 @@ services:
       # Kết nối tới service 'postgres' trong cùng mạng Docker thay vì 'localhost'
       DB_URL: jdbc:postgresql://postgres:5432/cafe_db
       DB_USERNAME: cafe_admin
-      DB_PASSWORD: strong_password_here
+      DB_PASSWORD: 123
       APP_PROFILE: dev
     depends_on:
       postgres:

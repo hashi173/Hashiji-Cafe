@@ -32,26 +32,25 @@ ROLLBACK;       ← Hủy toàn bộ, DB trở về trạng thái trước BEGIN
 
 ```sql
 BEGIN;
-
 -- Bước 1: Tạo đơn hàng qua stored procedure
 SELECT place_order(
-    '22222222-...'::UUID,   -- user_id
-    '...'::UUID,            -- address_id
-    NULL,                   -- promotion_id (không có KM)
-    '[{"product_id": "p0000000-...", "quantity": 2}]'::JSONB
+    '550e8400-e29b-41d4-a716-446655440000'::UUID,  -- user_id
+    '6ba7b810-9dad-11d1-80b4-00c04fd430c8'::UUID,  -- address_id
+    NULL,
+    '[{"product_id": "abc123", "quantity": 2,
+      "selected_options": {"size": "L", "sugar": "50%"}}]'::JSONB
 );
 
--- Bước 2: Xóa giỏ hàng (chỉ chạy nếu Bước 1 thành công)
+-- Bước 2: Xóa giỏ hàng sau khi đặt hàng thành công
 DELETE FROM cart_items
-WHERE session_id = '...'::UUID;
+WHERE session_id = '7c9e6679-7425-40de-944b-e07fc1f90ae7'::UUID;
 
--- Bước 3: Reset phiên mua hàng
-UPDATE shopping_sessions
-SET total_amount = 0
-WHERE id = '...'::UUID;
+-- Bước 3: Cập nhật trạng thái phiên mua hàng
+UPDATE shopping_sessions SET total_amount = 0
+WHERE id = '7c9e6679-7425-40de-944b-e07fc1f90ae7'::UUID;
 
 COMMIT;
--- Nếu BẤT KỲ bước nào lỗi → chạy ROLLBACK; thay vì COMMIT;
+-- Nếu có lỗi bất kỳ trong các bước trên: ROLLBACK;
 ```
 
 **Giải thích flow:**

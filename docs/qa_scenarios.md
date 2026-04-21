@@ -3,6 +3,28 @@
 
 ---
 
+## Các lệnh SQL "cứu nguy" (copy-paste nhanh)
+
+```sql
+-- Xem tất cả trigger
+SELECT trigger_name, event_object_table FROM information_schema.triggers WHERE trigger_schema='public';
+
+-- Xem tất cả function
+SELECT routine_name FROM information_schema.routines WHERE routine_schema='public' AND routine_type='FUNCTION';
+
+-- Xem mã nguồn function
+SELECT prosrc FROM pg_proc WHERE proname = 'place_order';
+
+-- Xóa trigger
+DROP TRIGGER IF EXISTS tên_trigger ON tên_bảng;
+
+-- Xóa function
+DROP FUNCTION IF EXISTS tên_hàm();
+
+-- Tạo lại function (dùng CREATE OR REPLACE để không cần xóa trước)
+CREATE OR REPLACE FUNCTION tên_hàm() ...
+```
+
 ## Phần A: Câu hỏi về TRANSACTION
 
 ### A1. "Hãy tạo một transaction mới để chuyển trạng thái đơn hàng"
@@ -16,12 +38,12 @@ UPDATE orders
 SET order_status = 'COMPLETED',
     payment_status = 'PAID',
     updated_at = NOW()
-WHERE id = 'o0000000-0000-0000-0000-000000000002';
+WHERE id = 'd0000000-0000-0000-0000-000000000005';
 
 -- Bước 2: Kiểm tra kết quả
 SELECT id, order_status, payment_status, grand_total
 FROM orders
-WHERE id = 'o0000000-0000-0000-0000-000000000002';
+WHERE id = 'd0000000-0000-0000-0000-000000000005';
 
 COMMIT;
 ```
@@ -36,24 +58,24 @@ COMMIT;
 ```sql
 -- Xem trạng thái TRƯỚC
 SELECT id, order_status, grand_total FROM orders
-WHERE id = 'o0000000-0000-0000-0000-000000000001';
+WHERE id = 'd0000000-0000-0000-0000-000000000001';
 
 BEGIN;
 
 -- Bước 1: Cập nhật giá (thành công)
 UPDATE orders SET grand_total = 999999
-WHERE id = 'o0000000-0000-0000-0000-000000000001';
+WHERE id = 'd0000000-0000-0000-0000-000000000001';
 
 -- Bước 2: Cố tình gây lỗi (FK vi phạm)
 UPDATE orders SET user_id = '00000000-0000-0000-0000-ffffffffffff'
-WHERE id = 'o0000000-0000-0000-0000-000000000001';
+WHERE id = 'd0000000-0000-0000-0000-000000000001';
 -- → LỖI: user_id không tồn tại trong bảng users
 
 ROLLBACK;
 
 -- Xem trạng thái SAU → grand_total vẫn giữ nguyên giá trị cũ!
 SELECT id, order_status, grand_total FROM orders
-WHERE id = 'o0000000-0000-0000-0000-000000000001';
+WHERE id = 'd0000000-0000-0000-0000-000000000001';
 ```
 
 **Giải thích:** "Mặc dù Bước 1 đã chạy thành công, nhưng vì Bước 2 gây lỗi nên toàn bộ transaction bị hủy. `grand_total` vẫn giữ nguyên giá trị 115000, chứng minh tính Atomicity."
@@ -75,13 +97,13 @@ BEGIN;
 
 -- Bước 1: Cập nhật đơn hàng 1
 UPDATE orders SET order_status = 'COMPLETED'
-WHERE id = 'o0000000-0000-0000-0000-000000000001';
+WHERE id = 'd0000000-0000-0000-0000-000000000001';
 
 SAVEPOINT sp_before_order2;
 
 -- Bước 2: Cố tình gây lỗi ở đơn hàng 2
 UPDATE orders SET grand_total = -100
-WHERE id = 'o0000000-0000-0000-0000-000000000002';
+WHERE id = 'd0000000-0000-0000-0000-000000000002';
 -- Giả sử ta phát hiện giá trị không hợp lệ
 
 ROLLBACK TO sp_before_order2;
@@ -379,25 +401,3 @@ WHERE proname IN ('place_order', 'get_revenue_report');
 > "Vì giá sản phẩm có thể thay đổi theo thời gian. Nếu chỉ lưu `product_id` và JOIN khi cần hiển thị, thì đơn hàng cũ sẽ hiển thị sai giá. Snapshot (`snapshot_unit_price`, `snapshot_product_name`) đảm bảo hóa đơn phản ánh chính xác giá tại thời điểm mua."
 
 ---
-
-## Phần E: Các lệnh SQL "cứu nguy" (copy-paste nhanh)
-
-```sql
--- Xem tất cả trigger
-SELECT trigger_name, event_object_table FROM information_schema.triggers WHERE trigger_schema='public';
-
--- Xem tất cả function
-SELECT routine_name FROM information_schema.routines WHERE routine_schema='public' AND routine_type='FUNCTION';
-
--- Xem mã nguồn function
-SELECT prosrc FROM pg_proc WHERE proname = 'place_order';
-
--- Xóa trigger
-DROP TRIGGER IF EXISTS tên_trigger ON tên_bảng;
-
--- Xóa function
-DROP FUNCTION IF EXISTS tên_hàm();
-
--- Tạo lại function (dùng CREATE OR REPLACE để không cần xóa trước)
-CREATE OR REPLACE FUNCTION tên_hàm() ...
-```
