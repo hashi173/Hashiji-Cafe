@@ -63,7 +63,7 @@ public class InventoryIntegrationTest {
         latte = new Product();
         latte.setName("Latte");
         // Product has no price, relies on ProductSize or manual entry
-        latte.setActive(true);
+        latte.setAvailable(true);
         productRepository.save(latte);
 
         // Create Recipe

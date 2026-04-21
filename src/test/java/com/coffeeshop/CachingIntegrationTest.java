@@ -31,7 +31,7 @@ public class CachingIntegrationTest {
     void testProductCaching() {
         // Mock repository behavior
         Product product = new Product();
-        product.setId(1L);
+        product.setId(java.util.UUID.randomUUID());
         product.setName("Cached Coffee");
         when(productRepository.findAllWithDetails()).thenReturn(Collections.singletonList(product));
 
