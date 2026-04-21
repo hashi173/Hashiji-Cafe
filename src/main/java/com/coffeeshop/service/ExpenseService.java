@@ -21,7 +21,7 @@ public class ExpenseService {
         return expenseRepository.save(expense);
     }
 
-    public void deleteExpense(@org.springframework.lang.NonNull Long id) {
+    public void deleteExpense(@org.springframework.lang.NonNull java.util.UUID id) {
         expenseRepository.deleteById(id);
     }
 

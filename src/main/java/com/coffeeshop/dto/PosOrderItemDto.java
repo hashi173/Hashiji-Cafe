@@ -5,7 +5,7 @@ import java.util.List;
 
 @Data
 public class PosOrderItemDto {
-    private Long productId;
+    private java.util.UUID productId;
     private String productName;
     private String sizeName;
     private Double price;

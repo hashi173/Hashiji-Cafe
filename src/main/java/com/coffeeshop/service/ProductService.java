@@ -26,7 +26,7 @@ public class ProductService {
     }
 
     @org.springframework.cache.annotation.Cacheable(value = "products", key = "#categoryId != null ? #categoryId : 'all'")
-    public List<Product> getProductsByCategory(Long categoryId) {
+    public List<Product> getProductsByCategory(java.util.UUID categoryId) {
         if (categoryId == null) {
             return getAllProducts();
         }
@@ -44,7 +44,7 @@ public class ProductService {
         return productRepository.searchProducts(keyword);
     }
 
-    public List<Product> searchProductsForMenu(String keyword, Long categoryId) {
+    public List<Product> searchProductsForMenu(String keyword, java.util.UUID categoryId) {
         return filterProductsFuzzy(getProductsByCategory(categoryId), keyword);
     }
 
@@ -63,7 +63,7 @@ public class ProductService {
         return productRepository.findByActiveWithDetailsPaginated(active, pageable);
     }
 
-    public Optional<Product> getProductById(Long id) {
+    public Optional<Product> getProductById(java.util.UUID id) {
         return productRepository.findById(id);
     }
 
@@ -79,15 +79,15 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public void deleteProduct(@org.springframework.lang.NonNull Long id) {
+    public void deleteProduct(@org.springframework.lang.NonNull java.util.UUID id) {
         // Soft delete: just de-activate
         updateStatus(id, false);
     }
 
     @org.springframework.cache.annotation.CacheEvict(value = "products", allEntries = true)
-    public void updateStatus(Long id, boolean active) {
+    public void updateStatus(java.util.UUID id, boolean active) {
         productRepository.findById(id).ifPresent(product -> {
-            product.setActive(active);
+            product.setAvailable(active);
             productRepository.save(product);
         });
     }
@@ -102,8 +102,8 @@ public class ProductService {
 
         String[] queryTerms = normalizeSearchText(keyword).split("\\W+");
 
-        Map<Long, Double> scores = new HashMap<>();
-        Map<Long, Product> productMap = new HashMap<>();
+        Map<java.util.UUID, Double> scores = new HashMap<>();
+        Map<java.util.UUID, Product> productMap = new HashMap<>();
 
         for (Product p : products) {
             double productScore = 0;

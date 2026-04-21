@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
+public interface IngredientRepository extends JpaRepository<Ingredient, java.util.UUID> {
     Optional<Ingredient> findByName(String name);
 }

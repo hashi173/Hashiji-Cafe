@@ -1,8 +1,7 @@
 package com.coffeeshop.controller;
 
 import com.coffeeshop.entity.Order;
-import com.coffeeshop.entity.OrderDetail;
-import com.coffeeshop.entity.OrderDetailTopping;
+import com.coffeeshop.entity.OrderItem;
 import com.coffeeshop.service.OrderService;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
@@ -28,7 +27,7 @@ public class InvoiceController {
     private final OrderService orderService;
 
     @GetMapping("/{orderId}")
-    public void generateInvoice(@PathVariable Long orderId, HttpServletResponse response)
+    public void generateInvoice(@PathVariable java.util.UUID orderId, HttpServletResponse response)
             throws IOException, DocumentException {
         Order order = orderService.getOrderById(orderId);
         if (order == null) {
@@ -45,7 +44,7 @@ public class InvoiceController {
     }
 
     private void generatePdf(Order order, HttpServletResponse response) throws IOException, DocumentException {
-        Document document = new Document(PageSize.A4); // or PageSize.A5 for smaller receipts
+        Document document = new Document(PageSize.A4);
         PdfWriter.getInstance(document, response.getOutputStream());
 
         document.open();
@@ -79,45 +78,42 @@ public class InvoiceController {
 
         // Table Header
         addTableHeader(table, "Item", boldFont);
-        addTableHeader(table, "Size/Attr", boldFont);
+        addTableHeader(table, "Options", boldFont);
         addTableHeader(table, "Qty", boldFont);
         addTableHeader(table, "Price", boldFont);
 
         NumberFormat currency = NumberFormat.getCurrencyInstance(Locale.US);
 
-        for (OrderDetail detail : order.getOrderDetails()) {
-            // Product Name + Toppings
-            String itemName = detail.getProductName();
-            if (detail.getSelectedToppings() != null && !detail.getSelectedToppings().isEmpty()) {
-                StringBuilder sb = new StringBuilder(itemName);
-                sb.append("\n + ");
-                for (OrderDetailTopping t : detail.getSelectedToppings()) {
-                    sb.append(t.getToppingName()).append(", ");
-                }
-                itemName = sb.substring(0, sb.length() - 2); // remove last comma
+        if (order.getOrderItems() != null) {
+            for (OrderItem detail : order.getOrderItems()) {
+                String itemName = detail.getSnapshotProductName() != null
+                        ? detail.getSnapshotProductName()
+                        : "Unknown";
+
+                table.addCell(new PdfPCell(new Phrase(itemName, normalFont)));
+
+                // Options
+                String meta = detail.getSnapshotOptions() != null ? detail.getSnapshotOptions() : "";
+                table.addCell(new PdfPCell(new Phrase(meta, smallFont)));
+
+                table.addCell(
+                        new PdfPCell(new Phrase(String.valueOf(detail.getQuantity()), normalFont)));
+
+                double lineTotal = detail.getSnapshotUnitPrice() != null
+                        ? detail.getSnapshotUnitPrice().doubleValue() * detail.getQuantity()
+                        : 0.0;
+                table.addCell(new PdfPCell(new Phrase(currency.format(lineTotal), normalFont)));
             }
-
-            table.addCell(new PdfPCell(new Phrase(itemName, normalFont)));
-
-            // Attributes / Size
-            String meta = detail.getSizeSelected();
-            if (detail.getAttributes() != null && !detail.getAttributes().isEmpty()) {
-                meta += "\n" + detail.getAttributes();
-            }
-            table.addCell(new PdfPCell(new Phrase(meta, smallFont)));
-
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(detail.getQuantity()), normalFont)));
-            table.addCell(new PdfPCell(
-                    new Phrase(currency.format(detail.getPriceAtPurchase() * detail.getQuantity()), normalFont)));
         }
 
         document.add(table);
 
         // Total
         document.add(new Paragraph(" ", normalFont)); // spacer
-        Paragraph total = new Paragraph("Total: " + currency.format(order.getTotalAmount()), titleFont);
-        total.setAlignment(Element.ALIGN_RIGHT);
-        document.add(total);
+        double total = order.getTotalAmount() != null ? order.getTotalAmount() : 0.0;
+        Paragraph totalPara = new Paragraph("Total: " + currency.format(total), titleFont);
+        totalPara.setAlignment(Element.ALIGN_RIGHT);
+        document.add(totalPara);
 
         // Footer
         document.add(new Paragraph(" ", normalFont));

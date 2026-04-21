@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+public interface ExpenseRepository extends JpaRepository<Expense, java.util.UUID> {
 
     @Query("SELECT SUM(e.amount) FROM Expense e")
     Double sumTotalExpenses();

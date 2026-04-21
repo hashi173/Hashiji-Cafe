@@ -3,14 +3,13 @@ package com.coffeeshop.service;
 import com.coffeeshop.dto.Cart;
 import com.coffeeshop.dto.CartItem;
 import com.coffeeshop.entity.*;
-import com.coffeeshop.repository.OrderDetailRepository;
-import com.coffeeshop.repository.OrderDetailToppingRepository;
+import com.coffeeshop.repository.OrderItemRepository;
 import com.coffeeshop.repository.OrderRepository;
-import com.coffeeshop.repository.ToppingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -18,9 +17,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final OrderDetailToppingRepository orderDetailToppingRepository;
-    private final ToppingRepository toppingRepository;
+    private final OrderItemRepository orderItemRepository;
     private final com.coffeeshop.repository.ProductRepository productRepository;
     private final com.coffeeshop.repository.IngredientRepository ingredientRepository;
     private final WorkShiftService workShiftService;
@@ -34,54 +31,37 @@ public class OrderService {
         order.setAddress(address);
         order.setNote(note);
         order.setTotalAmount(cart.getTotalAmount());
+        order.setGrandTotal(BigDecimal.valueOf(cart.getTotalAmount()));
         order.setStatus(OrderStatus.PENDING);
+        order.setOrderStatus("PENDING");
         order.setTrackingCode(generateTrackingCode());
 
         Order savedOrder = orderRepository.save(order);
 
         for (CartItem item : cart.getItems()) {
-            OrderDetail detail = new OrderDetail();
+            OrderItem detail = new OrderItem();
             detail.setOrder(savedOrder);
-            detail.setProductName(item.getProductName());
-            detail.setSizeSelected(item.getSizeName());
+            detail.setSnapshotProductName(item.getProductName());
             detail.setQuantity(item.getQuantity());
-            detail.setPriceAtPurchase(item.getPrice());
+            detail.setSnapshotUnitPrice(BigDecimal.valueOf(item.getPrice()));
+            detail.setSubTotal(BigDecimal.valueOf(item.getPrice() * item.getQuantity()));
+
             if (item.getAttributes() != null && !item.getAttributes().isEmpty()) {
-                detail.setAttributes(item.getAttributes().toString());
+                detail.setSnapshotOptions(item.getAttributes().toString());
             }
 
             if (item.getProductId() != null) {
-                // Use getReferenceById to avoid extra SELECT if entity exists (lazy loading
-                // proxy)
-                // Or findById if we want to be safe. getReferenceById is standard for setting
-                // FKs.
                 try {
                     Product product = productRepository.findById(item.getProductId()).orElse(null);
                     if (product != null) {
                         detail.setProduct(product);
-                        // Note: Inventory deduction happens when order status changes to COMPLETED
                     }
                 } catch (Exception e) {
                     // Ignore if product not found
                 }
             }
 
-            OrderDetail savedDetail = orderDetailRepository.save(detail);
-
-            if (item.getToppingIds() != null && !item.getToppingIds().isEmpty()) {
-                @SuppressWarnings("null")
-                List<Topping> toppings = toppingRepository.findAllById(item.getToppingIds());
-
-                for (Topping topping : toppings) {
-                    OrderDetailTopping detailTopping = new OrderDetailTopping();
-                    detailTopping.setOrderDetail(savedDetail);
-                    detailTopping.setTopping(topping);
-                    detailTopping.setToppingName(topping.getName());
-                    detailTopping.setPriceAtPurchase(topping.getPrice());
-
-                    orderDetailToppingRepository.save(detailTopping);
-                }
-            }
+            orderItemRepository.save(detail);
         }
 
         return savedOrder;
@@ -100,8 +80,8 @@ public class OrderService {
         order.setUser(staff);
         order.setCustomerName("Walk-in Customer");
         order.setOrderType("POS Order");
-        // Removed duplicate setOrderType line
         order.setStatus(OrderStatus.COMPLETED); // POS orders are immediate
+        order.setOrderStatus("COMPLETED");
         order.setTrackingCode(generateTrackingCode());
         order.setCreatedAt(java.time.LocalDateTime.now());
 
@@ -109,14 +89,15 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         for (com.coffeeshop.dto.PosOrderItemDto item : items) {
-            OrderDetail detail = new OrderDetail();
+            OrderItem detail = new OrderItem();
             detail.setOrder(savedOrder);
-            detail.setProductName(item.getProductName());
-            detail.setSizeSelected(item.getSizeName());
+            detail.setSnapshotProductName(item.getProductName());
             detail.setQuantity(item.getQuantity());
-            detail.setPriceAtPurchase(item.getPrice());
+            detail.setSnapshotUnitPrice(BigDecimal.valueOf(item.getPrice()));
+            detail.setSubTotal(BigDecimal.valueOf(item.getPrice() * item.getQuantity()));
+
             if (item.getAttributes() != null && !item.getAttributes().isEmpty()) {
-                detail.setAttributes(item.getAttributes().toString());
+                detail.setSnapshotOptions(item.getAttributes().toString());
             }
 
             if (item.getProductId() != null) {
@@ -146,16 +127,11 @@ public class OrderService {
             // Add to total
             totalAmount += (item.getPrice() * item.getQuantity());
 
-            orderDetailRepository.save(detail);
-
-            // Note: For now, we are skipping topping details saving in the database for
-            // manual POS items
-            // to keep it simple as requested, and because we might not have Topping
-            // entities for custom inputs.
-            // If needed, we can add a text field "toppings" to OrderDetail.
+            orderItemRepository.save(detail);
         }
 
         savedOrder.setTotalAmount(totalAmount);
+        savedOrder.setGrandTotal(BigDecimal.valueOf(totalAmount));
         return orderRepository.save(savedOrder);
     }
 
@@ -163,16 +139,17 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public Order getOrderById(Long id) {
+    public Order getOrderById(java.util.UUID id) {
         return orderRepository.findById(id).orElse(null);
     }
 
     @Transactional
-    public void updateOrderStatus(Long orderId, OrderStatus status) {
+    public void updateOrderStatus(java.util.UUID orderId, OrderStatus status) {
         Order order = getOrderById(orderId);
         if (order != null) {
             OrderStatus previousStatus = order.getStatus();
             order.setStatus(status);
+            order.setOrderStatus(status.name());
             orderRepository.save(order);
 
             // Deduct inventory only when order is marked as COMPLETED (and wasn't already
@@ -184,10 +161,11 @@ public class OrderService {
     }
 
     /**
-     * Deducts inventory based on order details and product recipes.
+     * Deducts inventory based on order items and product recipes.
      */
     private void deductInventoryForOrder(Order order) {
-        for (OrderDetail detail : order.getOrderDetails()) {
+        if (order.getOrderItems() == null) return;
+        for (OrderItem detail : order.getOrderItems()) {
             if (detail.getProduct() != null) {
                 Product product = detail.getProduct();
                 for (ProductRecipe recipe : product.getRecipes()) {

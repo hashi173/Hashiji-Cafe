@@ -160,7 +160,7 @@ public class ProductController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String showEditForm(@PathVariable java.util.UUID id, Model model, RedirectAttributes ra) {
         try {
             Product product = productService.getProductById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid product Id:" + id));
@@ -175,21 +175,21 @@ public class ProductController {
     }
 
     @GetMapping("/activate/{id}")
-    public String activateProduct(@PathVariable Long id, RedirectAttributes ra) {
+    public String activateProduct(@PathVariable java.util.UUID id, RedirectAttributes ra) {
         productService.updateStatus(id, true);
         ra.addFlashAttribute("message", "Product reactivated successfully!");
         return "redirect:/admin/products";
     }
 
     @GetMapping("/deactivate/{id}")
-    public String deactivateProduct(@PathVariable Long id, RedirectAttributes ra) {
+    public String deactivateProduct(@PathVariable java.util.UUID id, RedirectAttributes ra) {
         productService.updateStatus(id, false);
         ra.addFlashAttribute("message", "Product deactivated successfully!");
         return "redirect:/admin/products";
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable Long id, RedirectAttributes ra) {
+    public String deleteProduct(@PathVariable java.util.UUID id, RedirectAttributes ra) {
         productService.deleteProduct(id);
         ra.addFlashAttribute("message", "Product deleted successfully!");
         return "redirect:/admin/products";

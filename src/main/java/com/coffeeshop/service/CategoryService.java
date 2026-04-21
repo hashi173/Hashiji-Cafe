@@ -19,7 +19,7 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public java.util.Optional<Category> getCategoryById(@org.springframework.lang.NonNull Long id) {
+    public java.util.Optional<Category> getCategoryById(@org.springframework.lang.NonNull java.util.UUID id) {
         return categoryRepository.findById(id);
     }
 
@@ -29,7 +29,7 @@ public class CategoryService {
     }
 
     @org.springframework.cache.annotation.CacheEvict(value = "categories", allEntries = true)
-    public void deleteCategory(@org.springframework.lang.NonNull Long id) {
+    public void deleteCategory(@org.springframework.lang.NonNull java.util.UUID id) {
         categoryRepository.deleteById(id);
     }
 

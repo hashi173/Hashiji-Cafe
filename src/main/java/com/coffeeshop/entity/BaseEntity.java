@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import java.util.UUID;
+
 /**
  * Base Entity class providing common fields (id, createdAt, updatedAt)
  * for all other entities to inherit from.
@@ -17,8 +19,8 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 @org.springframework.stereotype.Repository
-public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
+public interface JobPostingRepository extends JpaRepository<JobPosting, java.util.UUID> {
         List<JobPosting> findByIsActiveTrueOrderByCreatedAtDesc();
 
         @org.springframework.data.jpa.repository.Query("SELECT j FROM JobPosting j WHERE LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")

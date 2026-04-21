@@ -54,7 +54,7 @@ public class AdminJobController {
     }
 
     @PostMapping("/{id}/status")
-    public String updateStatus(@PathVariable Long id, @RequestParam("status") JobApplication.ApplicationStatus status,
+    public String updateStatus(@PathVariable java.util.UUID id, @RequestParam("status") JobApplication.ApplicationStatus status,
             RedirectAttributes redirectAttributes) {
         if (id == null) {
             redirectAttributes.addFlashAttribute("error", "Invalid ID");
@@ -131,7 +131,7 @@ public class AdminJobController {
     }
 
     @GetMapping("/jobs/delete/{id}")
-    public String deleteJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteJob(@PathVariable java.util.UUID id, RedirectAttributes redirectAttributes) {
         if (id == null)
             return "redirect:/admin/recruitment/jobs";
         jobPostingRepository.deleteById(id);
@@ -140,7 +140,7 @@ public class AdminJobController {
     }
 
     @GetMapping("/jobs/toggle/{id}")
-    public String toggleJobStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String toggleJobStatus(@PathVariable java.util.UUID id, RedirectAttributes redirectAttributes) {
         if (id == null)
             return "redirect:/admin/recruitment/jobs";
         com.coffeeshop.entity.JobPosting job = jobPostingRepository.findById(id).orElse(null);

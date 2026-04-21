@@ -11,15 +11,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartItem {
-    private Long productId;
+    private java.util.UUID productId;
     private String productName;
     private String productNameVi;
     private String productImage;
-    private Long sizeId;
+    private java.util.UUID sizeId;
     private String sizeName;
     private Double price; // Unit price (Base + Size + Toppings)
     private Integer quantity;
-    private List<Long> toppingIds = new ArrayList<>();
+    private List<java.util.UUID> toppingIds = new ArrayList<>();
     private List<String> toppingNames = new ArrayList<>();
     private java.util.Map<String, String> attributes = new java.util.HashMap<>();
     private String note;

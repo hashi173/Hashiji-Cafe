@@ -155,7 +155,7 @@ public class PosController {
 
     @PostMapping("/orders/{id}/status")
     @ResponseBody
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id,
+    public ResponseEntity<?> updateOrderStatus(@PathVariable java.util.UUID id,
             @RequestParam("status") com.coffeeshop.entity.OrderStatus status) {
         try {
             orderService.updateOrderStatus(id, status);
@@ -173,7 +173,7 @@ public class PosController {
 
     @lombok.Data
     static class POSOrderItem {
-        private Long productId;
+        private java.util.UUID productId;
         private String productName;
         private String sizeName;
         private Double price;

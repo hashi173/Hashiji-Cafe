@@ -36,11 +36,11 @@ public class AiChatController {
      */
     @GetMapping("/recommend")
     public Map<String, Object> recommend(
-            @RequestParam(value = "productId", required = false) Long productId,
+            @RequestParam(value = "productId", required = false) java.util.UUID productId,
             @RequestParam(value = "query", required = false) String query,
             Authentication auth) {
 
-        Long userId = extractUserId(auth);
+        java.util.UUID userId = extractUserId(auth);
 
         List<Product> recommendations;
         String strategy;
@@ -81,13 +81,13 @@ public class AiChatController {
     }
 
     /** Safely extracts user ID from authentication principal via reflection. */
-    private Long extractUserId(Authentication auth) {
+    private java.util.UUID extractUserId(Authentication auth) {
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return null;
         }
         try {
             Object principal = auth.getPrincipal();
-            return (Long) principal.getClass().getMethod("getId").invoke(principal);
+            return (java.util.UUID) principal.getClass().getMethod("getId").invoke(principal);
         } catch (Exception e) {
             return null;
         }

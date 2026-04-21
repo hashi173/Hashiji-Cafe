@@ -34,17 +34,17 @@ public class HomeController {
 
     @GetMapping("/products/fragment")
     public String getProductsFragment(
-            @org.springframework.web.bind.annotation.RequestParam(name = "categoryId", required = false) Long categoryId,
+            @org.springframework.web.bind.annotation.RequestParam(name = "categoryId", required = false) java.util.UUID categoryId,
             @org.springframework.web.bind.annotation.RequestParam(name = "keyword", required = false) String keyword,
             Model model) {
-        if (categoryId != null && categoryId == 0)
-            categoryId = null; // Treat 0 as All
+        // categoryId is UUID, no need to compare to 0
+        // If categoryId is null, treat as "All"
         model.addAttribute("products", productService.searchProductsForMenu(keyword, categoryId));
         return "home :: productList"; // Return only the fragment
     }
 
     @GetMapping("/product/{id}")
-    public String productDetail(@PathVariable("id") Long id, Model model) {
+    public String productDetail(@PathVariable("id") java.util.UUID id, Model model) {
         Product product = productService.getProductById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid product Id:" + id));
 

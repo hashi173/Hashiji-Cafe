@@ -57,7 +57,7 @@ public class CategoryController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editCategory(@org.springframework.lang.NonNull @PathVariable Long id, Model model) {
+    public String editCategory(@org.springframework.lang.NonNull @PathVariable java.util.UUID id, Model model) {
         Category category = categoryService.getCategoryById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category Id:" + id));
         model.addAttribute("category", category);
@@ -65,7 +65,7 @@ public class CategoryController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable("id") Long id, RedirectAttributes ra) {
+    public String deleteCategory(@PathVariable("id") java.util.UUID id, RedirectAttributes ra) {
         try {
             categoryService.deleteCategory(id);
             ra.addFlashAttribute("message", "Category deleted successfully!");

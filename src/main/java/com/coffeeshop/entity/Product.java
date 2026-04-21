@@ -55,5 +55,15 @@ public class Product extends BaseEntity {
     @Column(length = 500)
     private String image;
 
-    private boolean active = true;
+    @Column(precision = 10, scale = 2)
+    private java.math.BigDecimal basePrice;
+
+    @Column(name = "is_available")
+    private boolean isAvailable = true;
+
+    @Column(name = "avg_rating", precision = 3, scale = 2)
+    private java.math.BigDecimal avgRating;
+
+    @Column(name = "review_count")
+    private Integer reviewCount = 0;
 }

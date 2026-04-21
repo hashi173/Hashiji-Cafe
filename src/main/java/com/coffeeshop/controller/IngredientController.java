@@ -43,14 +43,14 @@ public class IngredientController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteIngredient(@PathVariable Long id, RedirectAttributes ra) {
+    public String deleteIngredient(@PathVariable java.util.UUID id, RedirectAttributes ra) {
         ingredientRepository.deleteById(id);
         ra.addFlashAttribute("message", "Ingredient deleted!");
         return "redirect:/admin/ingredients";
     }
 
     @PostMapping("/restock/{id}")
-    public String restockIngredient(@PathVariable Long id, @RequestParam Double amount, RedirectAttributes ra) {
+    public String restockIngredient(@PathVariable java.util.UUID id, @RequestParam Double amount, RedirectAttributes ra) {
         ingredientRepository.findById(id).ifPresent(ingredient -> {
             ingredient.setStockQuantity(ingredient.getStockQuantity() + amount);
             ingredientRepository.save(ingredient);

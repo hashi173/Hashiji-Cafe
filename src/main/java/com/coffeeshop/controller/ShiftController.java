@@ -73,7 +73,7 @@ public class ShiftController {
         }
 
         @GetMapping("/{id}")
-        public String viewShift(@org.springframework.web.bind.annotation.PathVariable("id") Long id, Model model) {
+        public String viewShift(@org.springframework.web.bind.annotation.PathVariable("id") java.util.UUID id, Model model) {
                 WorkShift shift = workShiftRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Shift not found"));
 
@@ -91,9 +91,11 @@ public class ShiftController {
                 // Calculate Product Summary
                 java.util.Map<String, Integer> productSummary = new java.util.HashMap<>();
                 for (com.coffeeshop.entity.Order order : orders) {
-                        for (com.coffeeshop.entity.OrderDetail detail : order.getOrderDetails()) {
-                                String key = detail.getProductName() + " (" + detail.getSizeSelected() + ")";
+                        if (order.getOrderItems() != null) {
+                        for (com.coffeeshop.entity.OrderItem detail : order.getOrderItems()) {
+                                String key = (detail.getSnapshotProductName() != null ? detail.getSnapshotProductName() : "Unknown");
                                 productSummary.put(key, productSummary.getOrDefault(key, 0) + detail.getQuantity());
+                        }
                         }
                 }
 
@@ -105,7 +107,7 @@ public class ShiftController {
 
         @org.springframework.web.bind.annotation.PostMapping("/create")
         public String createShift(
-                        @org.springframework.web.bind.annotation.RequestParam Long userId,
+                        @org.springframework.web.bind.annotation.RequestParam java.util.UUID userId,
                         @org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime startTime,
                         @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime endTime) {
 
@@ -143,7 +145,7 @@ public class ShiftController {
         }
 
         @org.springframework.web.bind.annotation.PostMapping("/{id}/delete")
-        public String deleteShift(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        public String deleteShift(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
                 workShiftRepository.deleteById(id);
                 return "redirect:/admin/shifts";
         }

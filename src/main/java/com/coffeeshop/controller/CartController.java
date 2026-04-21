@@ -33,10 +33,10 @@ public class CartController {
 
     @PostMapping("/add")
     public String addToCart(
-            @RequestParam("productId") Long productId,
-            @RequestParam("sizeId") Long sizeId,
+            @RequestParam("productId") java.util.UUID productId,
+            @RequestParam("sizeId") java.util.UUID sizeId,
             @RequestParam("quantity") Integer quantity,
-            @RequestParam(value = "toppingIds", required = false) List<Long> toppingIds,
+            @RequestParam(value = "toppingIds", required = false) List<java.util.UUID> toppingIds,
             @RequestParam(value = "sugar", defaultValue = "100%") String sugar,
             @RequestParam(value = "ice", defaultValue = "100%") String ice,
             @RequestParam("note") String note,
@@ -58,7 +58,7 @@ public class CartController {
 
         if (toppingIds != null && !toppingIds.isEmpty()) {
             List<Topping> allToppings = toppingService.getAllToppings(); // Ideally filter by IDs in DB
-            for (Long tId : toppingIds) {
+            for (java.util.UUID tId : toppingIds) {
                 allToppings.stream().filter(t -> t.getId().equals(tId)).findFirst().ifPresent(t -> {
                     toppings.add(t);
                     toppingNames.add(t.getName());

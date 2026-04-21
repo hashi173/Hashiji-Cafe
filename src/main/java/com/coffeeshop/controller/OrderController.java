@@ -68,7 +68,7 @@ public class OrderController {
 
     /** Shows detailed view of a single order with items and status controls. */
     @GetMapping("/{id}")
-    public String viewOrder(@PathVariable("id") Long id, Model model) {
+    public String viewOrder(@PathVariable("id") java.util.UUID id, Model model) {
         Order order = orderService.getOrderById(id);
         if (order == null) {
             return "redirect:/admin/orders";
@@ -80,14 +80,14 @@ public class OrderController {
 
     /** Updates order status via dropdown (auto-submit). */
     @PostMapping("/{id}/status")
-    public String updateStatus(@PathVariable("id") Long id, @RequestParam("status") OrderStatus status) {
+    public String updateStatus(@PathVariable("id") java.util.UUID id, @RequestParam("status") OrderStatus status) {
         orderService.updateOrderStatus(id, status);
         return "redirect:/admin/orders/" + id;
     }
 
     /** Cancels an order (sets status to CANCELLED). */
     @PostMapping("/{id}/cancel")
-    public String cancelOrder(@PathVariable("id") Long id) {
+    public String cancelOrder(@PathVariable("id") java.util.UUID id) {
         orderService.updateOrderStatus(id, OrderStatus.CANCELLED);
         return "redirect:/admin/orders/" + id;
     }

@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 // User Repository
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, java.util.UUID> {
     Optional<User> findByUsername(String username);
 
     @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")

@@ -48,7 +48,7 @@ public class ExpenseController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteExpense(@org.springframework.lang.NonNull @PathVariable Long id) {
+    public String deleteExpense(@org.springframework.lang.NonNull @PathVariable java.util.UUID id) {
         expenseService.deleteExpense(id);
         return "redirect:/admin/expenses";
     }

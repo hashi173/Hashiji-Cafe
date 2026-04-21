@@ -44,7 +44,7 @@ public class TrackingController {
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/cancel")
-    public String cancelOrder(@RequestParam("orderId") Long orderId,
+    public String cancelOrder(@RequestParam("orderId") java.util.UUID orderId,
             @RequestParam("trackingCode") String trackingCode,
             @RequestParam(value = "reason", required = false) String reason,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {

@@ -22,7 +22,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(@org.springframework.lang.NonNull Long id) {
+    public void deleteUser(@org.springframework.lang.NonNull java.util.UUID id) {
         userRepository.deleteById(id);
     }
 
@@ -30,7 +30,7 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public Optional<User> getUserById(@org.springframework.lang.NonNull Long id) {
+    public Optional<User> getUserById(@org.springframework.lang.NonNull java.util.UUID id) {
         return userRepository.findById(id);
     }
 

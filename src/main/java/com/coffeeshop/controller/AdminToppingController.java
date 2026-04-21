@@ -34,7 +34,7 @@ public class AdminToppingController {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+    public String delete(@PathVariable java.util.UUID id, RedirectAttributes ra) {
         try {
             toppingRepository.deleteById(id);
             ra.addFlashAttribute("success", "Topping deleted successfully!");

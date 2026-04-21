@@ -9,15 +9,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-        List<Product> findByCategoryId(Long categoryId);
+public interface ProductRepository extends JpaRepository<Product, java.util.UUID> {
+        List<Product> findByCategoryId(java.util.UUID categoryId);
 
-        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.category.id = :categoryId AND p.active = true")
-        List<Product> findByCategoryIdAndActiveTrue(@Param("categoryId") Long categoryId);
+        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.category.id = :categoryId AND p.isAvailable = true")
+        List<Product> findByCategoryIdAndActiveTrue(@Param("categoryId") java.util.UUID categoryId);
 
+        @Query("SELECT p FROM Product p WHERE p.isAvailable = true")
         List<Product> findByActiveTrue();
 
-        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.active = true")
+        @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.isAvailable = true")
         List<Product> findAllWithDetails();
 
         @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes")
@@ -34,7 +35,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         org.springframework.data.domain.Page<Product> searchProductsPaginated(@Param("keyword") String keyword,
                         org.springframework.data.domain.Pageable pageable);
 
-        @Query(value = "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.active = :active", countQuery = "SELECT count(p) FROM Product p WHERE p.active = :active")
+        @Query(value = "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.sizes WHERE p.isAvailable = :active", countQuery = "SELECT count(p) FROM Product p WHERE p.isAvailable = :active")
         org.springframework.data.domain.Page<Product> findByActiveWithDetailsPaginated(@Param("active") boolean active,
                         org.springframework.data.domain.Pageable pageable);
 }

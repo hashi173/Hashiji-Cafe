@@ -80,7 +80,7 @@ public class UserController {
         } else {
             // Existing user - keep password if not creating new logic yet
             // Fix lint: explicitly check ID existence although implicit
-            Long userId = user.getId();
+            java.util.UUID userId = user.getId();
             if (userId != null) {
                 User existing = userService.getUserById(userId).orElse(null);
                 if (existing != null) {
@@ -110,7 +110,7 @@ public class UserController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteUser(@org.springframework.lang.NonNull @PathVariable Long id,
+    public String deleteUser(@org.springframework.lang.NonNull @PathVariable java.util.UUID id,
             org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
         try {
             userService.deleteUser(id);
@@ -131,7 +131,7 @@ public class UserController {
     }
 
     @GetMapping("/toggle/{id}")
-    public String toggleUserStatus(@PathVariable Long id,
+    public String toggleUserStatus(@PathVariable java.util.UUID id,
             org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
         User user = userService.getUserById(id).orElse(null);
         if (user != null) {
@@ -144,7 +144,7 @@ public class UserController {
 
     @GetMapping("/edit/{id}")
     @ResponseBody
-    public User editUser(@org.springframework.lang.NonNull @PathVariable Long id) {
+    public User editUser(@org.springframework.lang.NonNull @PathVariable java.util.UUID id) {
         return userService.getUserById(id).orElse(null);
     }
 }

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductSizeRepository extends JpaRepository<ProductSize, Long> {
-    java.util.List<ProductSize> findByProductId(Long productId);
+public interface ProductSizeRepository extends JpaRepository<ProductSize, java.util.UUID> {
+    java.util.List<ProductSize> findByProductId(java.util.UUID productId);
 }

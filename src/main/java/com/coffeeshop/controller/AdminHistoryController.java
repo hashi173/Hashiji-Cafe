@@ -172,7 +172,7 @@ public class AdminHistoryController {
         // Revenue needs full-month total, not just current page
         List<Order> allOrdersForSum = orderRepository.findAllByStatusAndCreatedAtBetween(
                 OrderStatus.COMPLETED, start, end);
-        double revenueSum = allOrdersForSum.stream().mapToDouble(Order::getTotalAmount).sum();
+        double revenueSum = allOrdersForSum.stream().mapToDouble(o -> o.getTotalAmount() != null ? o.getTotalAmount() : 0.0).sum();
         double totalExpenses = expenseList.stream().mapToDouble(Expense::getAmount).sum();
 
         model.addAttribute("month", month);

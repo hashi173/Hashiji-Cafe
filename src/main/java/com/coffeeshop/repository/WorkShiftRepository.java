@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface WorkShiftRepository extends JpaRepository<WorkShift, Long> {
+public interface WorkShiftRepository extends JpaRepository<WorkShift, java.util.UUID> {
     Optional<WorkShift> findByUserAndStatus(User user, com.coffeeshop.entity.ShiftStatus status);
 
     @org.springframework.data.jpa.repository.Query("SELECT w FROM WorkShift w WHERE LOWER(w.user.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(w.user.username) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY w.startTime DESC")
