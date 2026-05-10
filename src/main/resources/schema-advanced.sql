@@ -141,7 +141,7 @@ END;
 $$ LANGUAGE plpgsql; 
  
 -- Gắn trigger vào bảng product_reviews 
-CREATE TRIGGER trg_update_product_rating 
+CREATE OR REPLACE TRIGGER trg_update_product_rating 
     AFTER INSERT OR UPDATE OR DELETE ON product_reviews 
     FOR EACH ROW EXECUTE FUNCTION update_product_rating(); 
 
@@ -169,7 +169,7 @@ BEGIN
 END; 
 $$ LANGUAGE plpgsql; 
  
-CREATE TRIGGER trg_log_cart_behavior 
+CREATE OR REPLACE TRIGGER trg_log_cart_behavior 
     AFTER INSERT ON cart_items 
     FOR EACH ROW EXECUTE FUNCTION log_cart_behavior(); 
 
@@ -190,7 +190,7 @@ BEGIN
 END; 
 $$ LANGUAGE plpgsql; 
  
-CREATE TRIGGER trg_single_default_address 
+CREATE OR REPLACE TRIGGER trg_single_default_address 
     BEFORE INSERT OR UPDATE ON user_addresses 
     FOR EACH ROW EXECUTE FUNCTION enforce_single_default_address();  
 

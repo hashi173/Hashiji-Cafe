@@ -12,10 +12,10 @@ TRUNCATE TABLE categories CASCADE;
 TRUNCATE TABLE users CASCADE;
 
 INSERT INTO users (id, created_at, updated_at, full_name, username, password, email, phone, role, active) VALUES 
-('11111111-1111-1111-1111-111111111111', NOW(), NOW(), 'Admin Hashiji', 'admin', '$2a$12$AT3UvnzVgdS3aoDp9/g4jupjKovp8E52BNupKtuPWNOxOCA5Wipa6', 'admin@hashiji.cafe', '0901234567', 'ADMIN', true),
-('22222222-2222-2222-2222-222222222222', NOW(), NOW(), 'Nguyễn Văn Khách', 'user1', '$2a$12$AT3UvnzVgdS3aoDp9/g4jupjKovp8E52BNupKtuPWNOxOCA5Wipa6', 'khachhang@gmail.com', '0988776655', 'USER', true),
-('33333333-3333-3333-3333-333333333333', NOW(), NOW(), 'Trần Lệ Xuân', 'user2', '$2a$12$AT3UvnzVgdS3aoDp9/g4jupjKovp8E52BNupKtuPWNOxOCA5Wipa6', 'lexuan@gmail.com', '0912345678', 'USER', true),
-('44444444-4444-4444-4444-444444444444', NOW(), NOW(), 'Nhân viên Phục vụ', 'staff1', '$2a$12$AT3UvnzVgdS3aoDp9/g4jupjKovp8E52BNupKtuPWNOxOCA5Wipa6', 'staff@hashiji.cafe', '0902223333', 'STAFF', true);
+('11111111-1111-1111-1111-111111111111', NOW(), NOW(), 'Admin Hashiji', 'admin', '$2b$10$.EQgYU6IAaW11El8wk2PouNIKE66JWSOPhctqDYOroYJlfgS1pMWC', 'admin@hashiji.cafe', '0901234567', 'ADMIN', true),
+('22222222-2222-2222-2222-222222222222', NOW(), NOW(), 'Nguyễn Văn Khách', 'user1', '$2b$10$.EQgYU6IAaW11El8wk2PouNIKE66JWSOPhctqDYOroYJlfgS1pMWC', 'khachhang@gmail.com', '0988776655', 'USER', true),
+('33333333-3333-3333-3333-333333333333', NOW(), NOW(), 'Trần Lệ Xuân', 'user2', '$2b$10$.EQgYU6IAaW11El8wk2PouNIKE66JWSOPhctqDYOroYJlfgS1pMWC', 'lexuan@gmail.com', '0912345678', 'USER', true),
+('44444444-4444-4444-4444-444444444444', NOW(), NOW(), 'Nhân viên Phục vụ', 'staff1', '$2b$10$.EQgYU6IAaW11El8wk2PouNIKE66JWSOPhctqDYOroYJlfgS1pMWC', 'staff@hashiji.cafe', '0902223333', 'STAFF', true);
 
 -- 3. Khởi tạo dữ liệu Categories (Danh mục sản phẩm)
 INSERT INTO categories (id, created_at, updated_at, name, name_vi, description) VALUES 

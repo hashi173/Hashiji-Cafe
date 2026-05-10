@@ -81,7 +81,7 @@ Kết quả mong đợi:
 NAME                STATUS          PORTS
 hashiji-postgres    Up (healthy)    0.0.0.0:5432->5432/tcp
 hashiji-pgadmin     Up              0.0.0.0:5050->80/tcp
-hashiji-app         Up              0.0.0.0:8081->8081/tcp
+hashiji-app         Up              0.0.0.0:8080->8080/tcp
 ```
 
 ### Bước 5: Kiểm tra logs (nếu có lỗi)
@@ -102,7 +102,7 @@ docker compose logs -f hashiji-app
 
 #### 6a. Truy cập ứng dụng web
 
-Mở trình duyệt: http://localhost:8081
+Mở trình duyệt: http://localhost:8080
 
 Đăng nhập với tài khoản:
 - **Admin**: `admin` / `password`
@@ -616,7 +616,7 @@ SELECT * FROM get_revenue_report('2026-01-01', '2026-12-31');
 
 # PHẦN 4: THÔNG TIN ĐĂNG NHẬP
 
-## Ứng dụng web (http://localhost:8080 hoặc http://localhost:8081)
+## Ứng dụng web (http://localhost:8080 hoặc http://localhost:8080)
 
 | Vai trò | Username | Password |
 |---------|----------|----------|

@@ -8,7 +8,7 @@ services:
   # ── PostgreSQL 15 ──────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
-    container_name: hashiji-postgres
+    container_name: hashiji-postgres 
     restart: unless-stopped
     environment:
       POSTGRES_DB: cafe_db
@@ -18,9 +18,9 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      # Tự động chạy script SQL khi khởi tạo lần đầu
-      - ./src/main/resources/schema-advanced.sql:/docker-entrypoint-initdb.d/01-schema-advanced.sql
-      - ./src/main/resources/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
+      # Tự động chạy script SQL khi khởi tạo lần đầu (Đã chuyển sang cho Spring Boot tự chạy qua application.properties)
+      # - ./src/main/resources/schema-advanced.sql:/docker-entrypoint-initdb.d/01-schema-advanced.sql
+      # - ./src/main/resources/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cafe_admin -d cafe_db"]
       interval: 5s
