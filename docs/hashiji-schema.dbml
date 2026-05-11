@@ -1,0 +1,240 @@
+// =============================================================
+// Hashiji-Cafe DBMS Schema - DBML (15 tables)
+// Paste vào https://dbdiagram.io/d
+// =============================================================
+
+// ── ENUMS (reference) ────────────────────────────────────────
+//
+// role:        ADMIN | STAFF | USER
+// order_status: PENDING | CONFIRMED | COMPLETED | CANCELLED
+// payment:     COD | CREDIT_CARD | MOMO | BANK_TRANSFER
+// pay_status:  PAID | UNPAID | REFUNDED
+// order_type:  DINE_IN | TAKEAWAY | DELIVERY
+// shift_status: OPEN | CLOSED
+// job_type:    FULL_TIME | PART_TIME | INTERNSHIP
+// app_status:  NEW | REVIEWED | INTERVIEWING | REJECTED | HIRED
+// discount:    PERCENTAGE | FIXED
+
+// ── CORE TABLES ──────────────────────────────────────────────
+
+Table categories {
+  id uuid [pk]
+  name varchar(50) [not null, unique, note: "Tên tiếng Anh"]
+  name_vi varchar(50) [note: "Tên tiếng Việt"]
+  description varchar(255)
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Danh mục: Coffee, Tea, Smoothie, Cake"
+}
+
+Table users {
+  id uuid [pk]
+  username varchar(50) [not null, unique]
+  password varchar(100) [not null, note: "Bcrypt hash"]
+  full_name varchar(100)
+  role varchar(20) [not null, note: "ADMIN | STAFF | USER"]
+  email varchar(100)
+  phone varchar(15)
+  hourly_rate numeric(12,2) [note: "Lương/giờ (nhân viên)"]
+  user_code varchar(20) [unique]
+  active boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Tài khoản hệ thống"
+}
+
+Table user_addresses {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  address_line varchar(500)
+  is_default boolean [default: false, note: "Trigger: 1 default/user"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Địa chỉ giao hàng"
+}
+
+// ── PRODUCT TABLES ───────────────────────────────────────────
+
+Table products {
+  id uuid [pk]
+  category_id uuid [ref: > categories.id]
+  name varchar(100) [not null, unique]
+  name_vi varchar(100)
+  description text
+  description_vi text
+  tags text
+  image varchar(500)
+  base_price numeric(10,2)
+  is_available boolean [default: true]
+  avg_rating numeric(3,2) [default: 0, note: "Trigger auto-update"]
+  review_count int [default: 0, note: "Trigger auto-update"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Sản phẩm trong menu"
+}
+
+Table product_sizes {
+  id uuid [pk]
+  product_id uuid [ref: > products.id, note: "Sản phẩm cha"]
+  size_name varchar [note: "S | M | L | Standard"]
+  price numeric(10,2)
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Giá theo size của sản phẩm"
+}
+
+Table product_recipes {
+  id uuid [pk]
+  product_id uuid [not null, ref: > products.id]
+  ingredient_id uuid [not null, ref: > ingredients.id]
+  quantity_required numeric [not null, note: "Số lượng nguyên liệu cần"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Công thức: sản phẩm cần bao nhiêu nguyên liệu"
+}
+
+Table ingredients {
+  id uuid [pk]
+  name varchar [not null, unique]
+  unit varchar [not null, note: "g | ml | pcs"]
+  stock_quantity numeric [default: 0, note: "Tồn kho"]
+  cost_per_unit numeric [default: 0, note: "Giá nhập/đơn vị"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Nguyên liệu pha chế"
+}
+
+Table toppings {
+  id uuid [pk]
+  name varchar(50) [not null, unique, note: "Trân châu, Thạch, Shot espresso"]
+  price numeric(10,2)
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Topping thêm (add-on)"
+}
+
+Table product_reviews {
+  id uuid [pk]
+  product_id uuid [not null, ref: > products.id]
+  user_id uuid [not null, ref: > users.id]
+  rating_score int [note: "1-5"]
+  review_text text
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Đánh giá - trigger auto-update avg_rating"
+}
+
+// ── ORDER TABLES ─────────────────────────────────────────────
+
+Table promotions {
+  id uuid [pk]
+  discount_type varchar(50) [note: "PERCENTAGE | FIXED"]
+  discount_value numeric(12,2)
+  min_order_value numeric(12,2)
+  start_date timestamp
+  end_date timestamp
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Chương trình khuyến mãi"
+}
+
+Table orders {
+  id uuid [pk]
+  user_id uuid [ref: > users.id]
+  address_id uuid [ref: > user_addresses.id]
+  promotion_id uuid [ref: > promotions.id]
+  sub_total numeric(12,2)
+  discount_amount numeric(12,2)
+  grand_total numeric(12,2)
+  order_status varchar(50) [note: "PENDING|CONFIRMED|COMPLETED|CANCELLED"]
+  payment_method varchar(50) [note: "COD|CREDIT_CARD|MOMO|BANK_TRANSFER"]
+  payment_status varchar(50) [note: "PAID|UNPAID|REFUNDED"]
+  tracking_code varchar(100) [unique]
+  customer_name varchar(255) [note: "Legacy"]
+  phone varchar(20) [note: "Legacy"]
+  address_text text [note: "Legacy"]
+  note text
+  order_type varchar(50) [note: "DINE_IN|TAKEAWAY|DELIVERY"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Đơn hàng - place_order() function"
+}
+
+Table order_items {
+  id uuid [pk]
+  order_id uuid [not null, ref: > orders.id]
+  product_id uuid [ref: > products.id]
+  snapshot_product_name varchar(255) [note: "Tên SP tại thời điểm đặt"]
+  snapshot_unit_price numeric(12,2) [note: "Giá tại thời điểm đặt"]
+  quantity int
+  snapshot_options jsonb [note: "Size, sugar, ice..."]
+  sub_total numeric(12,2)
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Chi tiết sản phẩm trong đơn"
+}
+
+// ── CART / SESSION ───────────────────────────────────────────
+
+Table shopping_sessions {
+  id uuid [pk]
+  user_id uuid [ref: > users.id]
+  total_amount numeric(12,2) [default: 0]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Phiên mua sắm (giỏ hàng)"
+}
+
+Table cart_items {
+  id uuid [pk]
+  session_id uuid [not null, ref: > shopping_sessions.id]
+  product_id uuid [not null, ref: > products.id]
+  quantity int [default: 1]
+  selected_options jsonb [note: "Size, sugar, ice..."]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "SP trong giỏ - trigger log ADD_TO_CART"
+}
+
+// ── BEHAVIOR LOG ─────────────────────────────────────────────
+
+Table user_behavior_logs {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  product_id uuid
+  action_type varchar(50) [note: "ADD_TO_CART|VIEW|PURCHASE"]
+  action_weight numeric(5,2) [note: "Trọng số recommendation"]
+  created_at timestamp
+  updated_at timestamp
+
+  note: "Log hành vi (trigger tự ghi)"
+}
+
+// =============================================================
+// TRIGGERS & FUNCTIONS (reference)
+// =============================================================
+
+/*
+FUNCTIONS:
+  place_order(user_id, address_id, promotion_id, items JSONB) → UUID
+  get_revenue_report(from_date, to_date) → TABLE
+
+TRIGGERS:
+  trg_update_product_rating    → product_reviews (AFTER INSERT/UPDATE/DELETE)
+  trg_log_cart_behavior        → cart_items (AFTER INSERT)
+  trg_single_default_address   → user_addresses (BEFORE INSERT/UPDATE)
+*/

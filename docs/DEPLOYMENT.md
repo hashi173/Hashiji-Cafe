@@ -253,9 +253,10 @@ docker compose exec postgres pg_dump -U cafe_admin cafe_db > backup.sql
 
 ## 2.1. Yêu cầu hệ thống
 
-- **PostgreSQL 15** trở lên
+- **PostgreSQL 13** trở lên (khuyến nghị 15)
 - **Java 17** (JDK)
 - **Maven 3.8+** (hoặc dùng Maven Wrapper trong project)
+- Extension: `uuid-ossp` (hỗ trợ mã định danh UUID)
 - Công cụ quản lý DB: **psql**, **pgAdmin** hoặc **DBeaver**
 
 ### Kiểm tra đã cài đặt chưa
@@ -366,21 +367,181 @@ GRANT CREATE ON SCHEMA public TO cafe_admin;
      GRANT CREATE ON SCHEMA public TO cafe_admin;
      ```
 
-### Bước 2: Khởi tạo Schema và Functions/Triggers
+### Bước 2: Khởi tạo cấu trúc bảng (Schema)
 
-File `schema-advanced.sql` chứa:
-- Các hàm stored procedure (place_order, get_revenue_report)
-- Các trigger (update_product_rating, log_cart_behavior, enforce_single_default_address)
+Đăng nhập vào database `cafe_db` và chạy các lệnh sau theo đúng thứ tự.
 
 ```bash
-# Đăng nhập vào database cafe_db
 psql -U cafe_admin -d cafe_db
 ```
+
+#### 2a. Kích hoạt Extension UUID
+
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+```
+
+> Nếu gặp lỗi, thử: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;`
+
+#### 2b. Tạo toàn bộ bảng
+
+```sql
+-- 1. Categories
+CREATE TABLE IF NOT EXISTS categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(50) NOT NULL UNIQUE,
+    name_vi VARCHAR(50),
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Users
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    full_name VARCHAR(100),
+    role VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(15),
+    hourly_rate NUMERIC(12,2),
+    user_code VARCHAR(20) UNIQUE,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. User Addresses
+CREATE TABLE IF NOT EXISTS user_addresses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    address_line VARCHAR(500),
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Promotions
+CREATE TABLE IF NOT EXISTS promotions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    discount_type VARCHAR(50),
+    discount_value NUMERIC(12,2),
+    min_order_value NUMERIC(12,2),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Products
+CREATE TABLE IF NOT EXISTS products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    name_vi VARCHAR(100),
+    description TEXT,
+    description_vi TEXT,
+    tags TEXT,
+    image VARCHAR(500),
+    base_price NUMERIC(10,2),
+    is_available BOOLEAN DEFAULT TRUE,
+    avg_rating NUMERIC(3,2) DEFAULT 0,
+    review_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Orders
+CREATE TABLE IF NOT EXISTS orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
+    address_id UUID REFERENCES user_addresses(id),
+    promotion_id UUID REFERENCES promotions(id),
+    sub_total NUMERIC(12,2),
+    discount_amount NUMERIC(12,2),
+    grand_total NUMERIC(12,2),
+    order_status VARCHAR(50),
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(50),
+    tracking_code VARCHAR(100) UNIQUE,
+    customer_name VARCHAR(255),
+    phone VARCHAR(20),
+    address_text TEXT,
+    note TEXT,
+    order_type VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. Order Items
+CREATE TABLE IF NOT EXISTS order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    snapshot_product_name VARCHAR(255),
+    snapshot_unit_price NUMERIC(12,2),
+    quantity INTEGER,
+    snapshot_options JSONB,
+    sub_total NUMERIC(12,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. Product Reviews
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating_score INTEGER CHECK (rating_score >= 1 AND rating_score <= 5),
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. Shopping Sessions & Cart Items
+CREATE TABLE IF NOT EXISTS shopping_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    total_amount NUMERIC(12,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id UUID NOT NULL REFERENCES shopping_sessions(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity INTEGER DEFAULT 1,
+    selected_options JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 10. User Behavior Logs
+CREATE TABLE IF NOT EXISTS user_behavior_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID,
+    action_type VARCHAR(50),
+    action_weight NUMERIC(5,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Bước 3: Cài đặt Functions & Triggers
+
+Chạy file `src/main/resources/schema-advanced.sql` để tạo các đối tượng nâng cao:
+- **Function `place_order`**: Logic đặt hàng (kiểm tra địa chỉ, tính tổng, áp dụng KM)
+- **Function `get_revenue_report`**: Thống kê doanh thu theo ngày
+- **Trigger `trg_update_product_rating`**: Tự động cập nhật điểm đánh giá sản phẩm
+- **Trigger `trg_log_cart_behavior`**: Ghi log hành vi ADD_TO_CART
+- **Trigger `trg_single_default_address`**: Đảm bảo chỉ 1 địa chỉ mặc định mỗi user
 
 **Cách 1: Chạy trực tiếp file SQL**
 
 ```bash
-# Thoát psql trước (\q), sau đó chạy từ terminal:
 psql -U cafe_admin -d cafe_db -f src/main/resources/schema-advanced.sql
 ```
 
@@ -393,7 +554,7 @@ psql -U cafe_admin -d cafe_db -f src/main/resources/schema-advanced.sql
 
 **Kết quả mong đợi:**
 ```
-CREATE FUNCTION
+CREATE EXTENSION
 CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
@@ -402,7 +563,7 @@ CREATE TRIGGER
 CREATE TRIGGER
 ```
 
-### Bước 3: Nạp dữ liệu mẫu (Seed Data)
+### Bước 4: Nạp dữ liệu mẫu (Seed Data)
 
 File `seed-data.sql` chứa dữ liệu mẫu cho:
 - Users (admin, staff, khách hàng)
@@ -415,7 +576,7 @@ File `seed-data.sql` chứa dữ liệu mẫu cho:
 psql -U cafe_admin -d cafe_db -f src/main/resources/seed-data.sql
 ```
 
-Hoặc copy-paste nội dung file vào psql/pgAdmin như Bước 2.
+Hoặc copy-paste nội dung file vào psql/pgAdmin như Bước 3.
 
 **Kết quả mong đợi:**
 ```
@@ -426,7 +587,7 @@ INSERT 0 5    -- 5 orders
 INSERT 0 ...  -- order items
 ```
 
-### Bước 4: Kiểm tra database đã tạo đúng chưa
+### Bước 5: Kiểm tra database đã tạo đúng chưa
 
 ```bash
 # Đăng nhập vào database
@@ -460,7 +621,7 @@ WHERE trigger_schema = 'public';
 \q
 ```
 
-### Bước 5: Cấu hình Spring Boot
+### Bước 6: Cấu hình Spring Boot
 
 File cấu hình: `src/main/resources/application.properties` (hoặc `application-dev.properties`)
 
@@ -484,7 +645,7 @@ spring.jpa.show-sql=true
 - KHÔNG dùng `ddl-auto=create` hoặc `ddl-auto=create-drop` vì sẽ mất functions và triggers
 - Nếu muốn reset database hoàn toàn, chạy lại file SQL thủ công
 
-### Bước 6: Build và chạy ứng dụng
+### Bước 7: Build và chạy ứng dụng
 
 #### Cách 1: Dùng Maven Wrapper (Khuyến khích)
 
@@ -522,9 +683,9 @@ java -jar target/*.jar
 2. Tìm file `HashijiCafeApplication.java` (class có `@SpringBootApplication`)
 3. Click chuột phải > **Run**
 
-### Bước 7: Validate ứng dụng hoạt động
+### Bước 8: Validate ứng dụng hoạt động
 
-#### 7a. Kiểm tra console logs
+#### 8a. Kiểm tra console logs
 
 Khi khởi động thành công, console sẽ hiển thị:
 
@@ -540,7 +701,7 @@ Khi khởi động thành công, console sẽ hiển thị:
 Started HashijiCafeApplication in X.XXX seconds
 ```
 
-#### 7b. Truy cập ứng dụng web
+#### 8b. Truy cập ứng dụng web
 
 Mở trình duyệt: http://localhost:8080
 
@@ -549,7 +710,7 @@ Mở trình duyệt: http://localhost:8080
 - **Nhân viên**: `staff1` / `password`
 - **Khách hàng**: `user1` / `password` hoặc `user2` / `password`
 
-#### 7c. Test API (tùy chọn)
+#### 8c. Test API (tùy chọn)
 
 ```bash
 # Test endpoint công khai
@@ -561,7 +722,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   -d '{"username": "user1", "password": "password"}'
 ```
 
-#### 7d. Test Transaction/Trigger/Procedure
+#### 8d. Test Transaction/Trigger/Procedure
 
 ```bash
 # Đăng nhập vào database
@@ -598,6 +759,48 @@ SELECT * FROM orders ORDER BY created_at DESC LIMIT 1;
 -- Test 3: Xem báo cáo doanh thu
 SELECT * FROM get_revenue_report('2026-01-01', '2026-12-31');
 ```
+
+## 2.4. Xử lý lỗi thường gặp
+
+### Lỗi: `uuid_generate_v4()` không tồn tại
+
+```
+ERROR: function uuid_generate_v4() does not exist
+```
+
+**Cách sửa:** Đảm bảo đã chạy Bước 2a (CREATE EXTENSION). Nếu vẫn lỗi:
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+```
+
+### Lỗi: Khóa ngoại (Foreign Key) khi xóa bảng
+
+```
+ERROR: cannot drop table ... because other objects depend on it
+```
+
+**Cách sửa:** Dùng `CASCADE` để xóa sạch liên kết:
+```sql
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+-- ... xóa theo thứ tự ngược lại
+```
+
+### Lỗi: Hibernate mất functions/triggers
+
+```
+ERROR: function place_order(...) does not exist
+```
+
+**Cách sửa:** Kiểm tra `application.properties`, đảm bảo:
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+KHÔNG dùng `ddl-auto=create` hoặc `ddl-auto=create-drop`.
+
+### Thứ tự thực hiện quan trọng
+
+Tuyệt đối tuân thủ thứ tự: **Bước 2a → 2b → 3 → 4**. Nếu chạy sai thứ tự, có thể gặp lỗi khóa ngoại hoặc thiếu extension.
 
 ---
 
