@@ -37,6 +37,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
       - "5050:80"
+    volumes:
+      - .:/var/lib/pgadmin/storage/admin_hashiji.cafe
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,52 +1,69 @@
-CREATE OR REPLACE FUNCTION fn_show_total_customers_generic()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_total bigint;
+-- "Transaction hủy đơn và hoàn tiền, cập nhật payment_status"
+-- **Đề bài:** Transaction hủy đơn và hoàn tiền, cập nhật payment_status
+-- **Yêu cầu:**
+-- Viết transaction hủy đơn hàng (CANCELLED) và cập nhật trạng thái thanh toán (REFUNDED)
+-- Đảm bảo tính nguyên tử: nếu một bước thất bại thì rollback toàn bộ
+
+BEGIN;
+
+  -- Giả sử hủy đơn có id = 'đặt order_id cụ thể'
+  -- Bước 1: Cập nhật trạng thái đơn hàng thành CANCELLED
+  UPDATE orders
+  SET order_status = 'CANCELLED',
+      updated_at = NOW()
+  WHERE id = 'order_id_here'
+    AND order_status IN ('PENDING', 'CONFIRMED');
+
+  -- Bước 2: Cập nhật trạng thái thanh toán thành REFUNDED nếu đã thanh toán
+  UPDATE orders
+  SET payment_status = 'REFUNDED',
+      updated_at = NOW()
+  WHERE id = 'order_id_here'
+    AND payment_status = 'PAID';
+
+  -- Kiểm tra nếu không có dòng nào bị ảnh hưởng → rollback
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Không thể hủy đơn: đơn không tồn tại hoặc đã ở trạng thái không hợp lệ';
+  END IF;
+
+COMMIT;
+----
+
+-- **Phiên bản đóng gói thành Function với xử lý lỗi đầy đủ:**
+
+CREATE OR REPLACE FUNCTION cancel_order_and_refund(p_order_id uuid)
+RETURNS void AS $$
 BEGIN
-    EXECUTE format('SELECT COUNT(*) FROM %I.%I', TG_TABLE_SCHEMA, TG_TABLE_NAME)
-    INTO v_total;
+  -- Kiểm tra đơn hàng có tồn tại và ở trạng thái hợp lệ không
+  IF NOT EXISTS (
+    SELECT 1 FROM orders
+    WHERE id = p_order_id
+      AND order_status IN ('PENDING', 'CONFIRMED')
+  ) THEN
+    RAISE EXCEPTION 'Đơn hàng không tồn tại hoặc không thể hủy (trạng thái: %)',
+      (SELECT order_status FROM orders WHERE id = p_order_id);
+  END IF;
 
-    RAISE NOTICE 'Tổng khách hàng hiện tại (%I.%I): %', TG_TABLE_SCHEMA, TG_TABLE_NAME, v_total;
-    RETURN NULL;
+  -- Cập nhật trạng thái đơn hàng thành CANCELLED
+  UPDATE orders
+  SET order_status = 'CANCELLED',
+      updated_at = NOW()
+  WHERE id = p_order_id;
+
+  -- Cập nhật trạng thái thanh toán thành REFUNDED nếu đã thanh toán
+  UPDATE orders
+  SET payment_status = 'REFUNDED',
+      updated_at = NOW()
+  WHERE id = p_order_id
+    AND payment_status = 'PAID';
+
 END;
-$$;
+$$ LANGUAGE plpgsql;
+----
 
-DO $$
-DECLARE
-    v_table text;
-BEGIN
-    SELECT t.table_name
-    INTO v_table
-    FROM information_schema.tables t
-    WHERE t.table_schema = 'public'
-      AND t.table_type = 'BASE TABLE'
-      AND t.table_name IN ('customers', 'customer', 'khach_hang', 'khachhang')
-    ORDER BY CASE t.table_name
-        WHEN 'customers'  THEN 1
-        WHEN 'customer'   THEN 2
-        WHEN 'khach_hang' THEN 3
-        WHEN 'khachhang'  THEN 4
-        ELSE 99
-    END
-    LIMIT 1;
+-- **Gọi function trong transaction:**
 
-    IF v_table IS NULL THEN
-        RAISE EXCEPTION 'Không tìm thấy bảng khách hàng trong public (customers/customer/khach_hang/khachhang)';
-    END IF;
-
-    EXECUTE format('DROP TRIGGER IF EXISTS trg_show_total_customers ON public.%I', v_table);
-
-    EXECUTE format(
-        'CREATE TRIGGER trg_show_total_customers
-         AFTER INSERT ON public.%I
-         FOR EACH STATEMENT
-         EXECUTE FUNCTION fn_show_total_customers_generic()',
-        v_table
-    );
-
-    RAISE NOTICE 'Đã gắn trigger vào bảng: public.%', v_table;
-END;
-$$;
-
+BEGIN;
+  SELECT cancel_order_and_refund('order-uuid-here');
+COMMIT;
+----
